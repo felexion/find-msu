@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShaderGradientCanvas, ShaderGradient } from '@shadergradient/react';
+import MapView from './MapView';
 
 // IMPORT ASSETS
 import logo from './images/find_styled.png';
@@ -12,6 +13,10 @@ export default function App() {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [isBlurringOut, setIsBlurringOut] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [mapVisible, setMapVisible] = useState(false);
+  const [mapFeature, setMapFeature] = useState(null);
 
   // Smooth loading bar simulation (0 to 100%)
   useEffect(() => {
@@ -29,11 +34,42 @@ export default function App() {
     }
   }, [loadingProgress]);
 
+  // Trigger map fade-in after it mounts
+  useEffect(() => {
+    if (showMap) {
+      const timeout = setTimeout(() => setMapVisible(true), 50);
+      return () => clearTimeout(timeout);
+    } else {
+      setMapVisible(false);
+    }
+  }, [showMap]);
+
   // Triggered when user clicks anywhere after loading completes
   const handleScreenClick = () => {
     if (isLoaded && !showDashboard) {
       setShowDashboard(true);
     }
+  };
+
+  // Handle opening map for specific features
+  const openMap = (feature) => {
+    setMapFeature(feature);
+    // Step 1: Start blurring out dashboard (500ms animation)
+    setIsBlurringOut(true);
+    // Step 2: After blur animation completes, show map (300ms delay + 200ms for safety)
+    setTimeout(() => {
+      setShowMap(true);
+    }, 500);
+  };
+
+  const closeMap = () => {
+    // Step 1: Hide map
+    setShowMap(false);
+    // Step 2: After map is gone, unblur dashboard
+    setTimeout(() => {
+      setIsBlurringOut(false);
+      setMapFeature(null);
+    }, 300);
   };
 
   return (
@@ -92,22 +128,31 @@ export default function App() {
         </ShaderGradientCanvas>
       </div>
 
+      {/* MAP VIEW OVERLAY */}
+      {showMap && (
+        <div className={`absolute inset-0 z-50 transition-all duration-700 ${
+          mapVisible ? 'opacity-100' : 'opacity-0'
+        }`}>
+          <MapView onClose={closeMap} selectedFeature={mapFeature} />
+        </div>
+      )}
+
       {/* CENTRAL BASE CONTENT INTERFACE LAYER */}
-      <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-8 bg-black/15 backdrop-blur-xs">
+      <div className={`relative z-10 w-full h-full flex flex-col items-center justify-center p-8 bg-black/15 backdrop-blur-xs transition-all duration-500 ${
+        isBlurringOut ? 'blur-xl opacity-0 pointer-events-none' : 'blur-none opacity-100'
+      }`}>
         
         {/* SHARED MAX-WIDTH BOUNDING BOX FOR PERFECT VERTICAL ALIGNMENT */}
-        <div className={`flex flex-col items-center w-full max-w-xl text-center transform transition-all duration-700 ease-in-out ${
-          showDashboard ? '-translate-y-8' : 'translate-y-0'
-        }`}>
+        <div className={`flex flex-col items-center w-full max-w-xl text-center transform transition-all duration-700 ease-in-out`}>
           
           {/* LOGO ELEMENT */}
           <img 
             src={logo} 
             alt="Find Logo" 
-            className={`h-auto object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.4)] transition-all duration-700 ease-in-out ${
+            className={`w-96 md:w-[28rem] h-auto object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.4)] transition-all duration-1000 ease-out ${
               showDashboard 
-                ? 'w-56 mb-8' 
-                : 'w-96 md:w-[28rem] mb-6'
+                ? '-translate-y-24 mb-0' 
+                : 'translate-y-0 mb-6'
             }`}
           />
 
@@ -139,7 +184,7 @@ export default function App() {
           )}
 
           {/* PHASE 3: THE DASHBOARD HUB */}
-          <div className={`w-full flex flex-col items-center space-y-6 transition-all duration-700 delay-100 ${
+          <div className={`w-full flex flex-col items-center space-y-6 -mt-20 transition-all duration-700 delay-100 ${
             showDashboard 
               ? 'opacity-100 translate-y-0 pointer-events-auto' 
               : 'opacity-0 translate-y-10 pointer-events-none absolute'
@@ -166,7 +211,7 @@ export default function App() {
               {/* BUTTON 1 - ROOM AVAILABILITY */}
               <button 
                 className="group flex flex-col items-center space-y-2.5 focus:outline-none"
-                onClick={(e) => { e.stopPropagation(); alert('Opening Room Availability...'); }}
+                onClick={(e) => { e.stopPropagation(); openMap('Room Availability'); }}
               >
                 {/* p-6 makes the inner graphic look smaller and crisp inside the square */}
                 <div className="w-full aspect-square flex items-center justify-center bg-white/15 border border-white/10 hover:bg-white/20 active:scale-95 rounded-2xl transition duration-200 backdrop-blur-md shadow-lg p-6">
@@ -182,7 +227,7 @@ export default function App() {
               {/* BUTTON 2 - TEST WI-FI */}
               <button 
                 className="group flex flex-col items-center space-y-2.5 focus:outline-none"
-                onClick={(e) => { e.stopPropagation(); alert('Running Wi-Fi Diagnosis...'); }}
+                onClick={(e) => { e.stopPropagation(); openMap('Wi-Fi Hotspots'); }}
               >
                 <div className="w-full aspect-square flex items-center justify-center bg-white/15 border border-white/10 hover:bg-white/20 active:scale-95 rounded-2xl transition duration-200 backdrop-blur-md shadow-lg p-6">
                   <img 
@@ -197,7 +242,7 @@ export default function App() {
               {/* BUTTON 3 - ROOM SCHEDULES */}
               <button 
                 className="group flex flex-col items-center space-y-2.5 focus:outline-none"
-                onClick={(e) => { e.stopPropagation(); alert('Fetching Room Schedules...'); }}
+                onClick={(e) => { e.stopPropagation(); openMap('Room Schedules'); }}
               >
                 <div className="w-full aspect-square flex items-center justify-center bg-white/15 border border-white/10 hover:bg-white/20 active:scale-95 rounded-2xl transition duration-200 backdrop-blur-md shadow-lg p-6">
                   <img 
@@ -212,7 +257,7 @@ export default function App() {
               {/* BUTTON 4 - NAVIGATION */}
               <button 
                 className="group flex flex-col items-center space-y-2.5 focus:outline-none"
-                onClick={(e) => { e.stopPropagation(); alert('Opening Navigation Maps...'); }}
+                onClick={(e) => { e.stopPropagation(); openMap('Campus Navigation'); }}
               >
                 <div className="w-full aspect-square flex items-center justify-center bg-white/15 border border-white/10 hover:bg-white/20 active:scale-95 rounded-2xl transition duration-200 backdrop-blur-md shadow-lg p-6">
                   <img 
