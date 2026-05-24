@@ -82,7 +82,7 @@ const MOCK_ROOMS = [
   {id: 39, name: 'University Infirmary', coords: [6.065174012112744, 125.12328029288801], status: 'Open', type: 'Building' },
   {id: 40, name: 'Alumni Pavilion', coords: [6.066760016344999, 125.12845911413804], status: 'Open', type: 'Building' },
   {id: 41, name: 'Laktanan', coords: [6.066342545843633, 125.12857083037396], status: 'Open', type: 'Field' },
-  {id: 33, name: 'Mosque', coords: [6.06668695352738, 125.1226887754368], status: 'Open', type: 'Building' },
+  {id: 42, name: 'Mosque', coords: [6.06668695352738, 125.1226887754368], status: 'Open', type: 'Building' },
 ];
 
 const FACILITIES = [
