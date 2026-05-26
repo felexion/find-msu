@@ -9,6 +9,8 @@ import escBtn from './images/esc-btn.png';
 import cnsmLogo from './images/cnsm.png';
 import toiletIcon from './images/restroom-simple.png';
 import stairsIcon from './images/stairs.png';
+import yIconImg      from './images/yicon.png';
+import yBuildingImg   from './buildings/ybuilding.jpg';
 import newScienceImg  from './buildings/new-science.jpg';
 import cnsmOldImg     from './buildings/cnsm-old.jpg';
 import ictComplexImg  from './buildings/ict-complex.jpg';
@@ -21,6 +23,7 @@ const FACILITY_COLOR = '#f0ad3e';
 
 const LOGOS = {
   7: cnsmLogo,
+  102: yIconImg,
 };
 
 // ── Schedule data ────────────────────────────────────────────────────────────
@@ -42,7 +45,7 @@ function rotateSchedule(n) {
 const BUILDINGS = {
   7: [
     {
-      id: 'cnsm-3', name: 'ICT Complex', rooms: 13, image: ictComplexImg,
+      id: 'cnsm-3', name: 'ICT Complex', code: 'ICT', rooms: 8, image: ictComplexImg,
       coords: [6.069115927450321, 125.12674627794516],
       floors: [
         {
@@ -50,7 +53,13 @@ const BUILDINGS = {
           rooms: [
             { id: 'wc1-f1',    label: 'WC',  fullName: "Bathroom (Left)",           type: 'wc'    },
             { id: 'cl1',       label: 'CL1', fullName: 'Computer Laboratory 1',      type: 'room',  schedule: rotateSchedule(0) },
-            { id: 'ccc',       label: 'CCC', fullName: 'Command and Control Center', type: 'room',  schedule: rotateSchedule(2) },
+            { id: 'ccc',       label: 'CCC', fullName: 'Command and Control Center', type: 'office',
+              director: 'Assoc. Prof. Jose T. Trillo',
+              position: 'ICTO Director',
+              contact: '0908-810-5709',
+              email: 'icto@msugensan.edu.ph',
+              description: 'The Command and Control Center is the central security monitoring hub of the university. It connects and monitors campus security camera systems to help maintain campus safety and surveillance. The center also houses the university data center, which supports the institution\'s network and digital infrastructure.',
+            },
             { id: 'cl2',       label: 'CL2', fullName: 'Computer Laboratory 2',      type: 'room',  schedule: rotateSchedule(4) },
             { id: 'wc2-f1',    label: 'WC',  fullName: "Bathroom (Right)",           type: 'wc'    },
             { id: 'stair1-f1', label: '↑',   fullName: 'Staircase (Left)',           type: 'stair' },
@@ -79,7 +88,91 @@ const BUILDINGS = {
   ],
 };
 
-// All searchable items — colleges + facilities merged for search
+// Facility buildings — keyed by facility id
+const FACILITY_BUILDINGS = {
+  102: [
+    {
+      id: 'ybldg-1', name: "Y Building", code: 'Y-BLDG', rooms: 9, image: yBuildingImg,
+      coords: [6.065520188853716, 125.12838202769997],
+      accentColor: FACILITY_COLOR,
+      planType: 'ybldg',
+      floors: [
+        {
+          label: 'Floor 1',
+          rooms: [
+            {
+              id: 'y-cashier', label: 'Cashier', fullName: "Cashier's Office", type: 'office',
+              director: 'Angela Q. Sanchez', position: 'University Acting Cashier',
+              contact: '0908 810 7847', email: 'cashiersoffice@msugensan.edu.ph',
+              description: "The Cashier's Office handles official university payments and financial transactions. Students may visit this office to pay tuition fees, miscellaneous fees, clearances, and other required university charges. It also provides payment verification and official receipts for completed transactions.",
+            },
+            {
+              id: 'y-registrar', label: 'Registrar', fullName: "Office of the University Registrar", type: 'office',
+              director: 'James Edward R. Olaer', position: 'OIC-University Registrar',
+              contact: '0908-810-5671', email: 'registraroffice@msugensan.edu.ph',
+              description: "The Office of the Registrar is the gateway of the students to the University. It is an essential unit of the institution which keeps and maintains sensitive data related to the academic records of the students.",
+            },
+            {
+              id: 'y-smo', label: 'SMO', fullName: "Supply Management Office", type: 'office',
+              director: 'Lorraine M. Dagalangit-Sarigala, MS', position: 'SMO Director',
+              contact: '0908 810 5630', email: 'smo@msugensan.edu.ph',
+              description: "The Supply Management Office (SMO) manages the procurement, distribution, and proper use of university resources and equipment in accordance with government rules and regulations. It helps ensure that university supplies and property are used efficiently and responsibly. Student organizations and offices may also coordinate with the SMO to request chairs, tables, and other logistical resources for events and activities.",
+            },
+            {
+              id: 'y-vcaa', label: 'VCAA', fullName: "Office of the Vice Chancellor for Academic Affairs", type: 'office',
+              director: 'Prof. Mishell D. Lawas, D. Eng.', position: 'Vice Chancellor for Academic Affairs',
+              contact: '09088105579', email: 'vcaaoffice@msugensan.edu.ph',
+              description: "The Office of the Vice Chancellor for Academic Affairs serves as the university's central academic leadership unit responsible for overseeing, coordinating, and enhancing all academic programs, instructional activities, and academic support services to ensure quality education and institutional excellence.",
+            },
+            {
+              id: 'y-confroom', label: 'MCR', fullName: "Mini Conference Room", type: 'office',
+              director: 'Atty. Shidik T. Abantas, MDM, LLM', position: 'University Chancellor',
+              contact: '09619767447', email: 'oc@msugensan.edu.ph',
+              description: "The Mini Conference Room is a venue for meetings, discussions, presentations, and small university gatherings. It provides a professional and organized space for academic, administrative, and organizational activities. Students, faculty, and university offices may use the room for conferences, planning sessions, and collaborative events.",
+            },
+            {
+              id: 'y-oc', label: 'OC', fullName: "Office of the Chancellor (Old)", type: 'office',
+              director: 'Atty. Shidik T. Abantas, MDM, LLM', position: 'University Chancellor',
+              contact: '09619767447', email: 'oc@msugensan.edu.ph',
+              description: "The Office of the Chancellor serves as the central leadership office of the university, overseeing all administrative, academic, and institutional functions in alignment with the university's vision and mission.",
+            },
+            {
+              id: 'y-vcaf', label: 'VCAF', fullName: "Office of the Vice Chancellor for Administration and Finance", type: 'office',
+              director: 'Prof. Sheila J. Loable, MS', position: 'Vice Chancellor for Administration and Finance',
+              contact: '09088107845', email: 'vcafoffice@msugensan.edu.ph',
+              description: "The Office of the Vice Chancellor for Administration and Finance serves as the university's central administrative unit responsible for ensuring efficient, transparent, and effective management of financial resources, administrative services, and operational support systems.",
+            },
+            {
+              id: 'y-vcpd', label: 'VCPD', fullName: "Office of the Vice Chancellor for Planning and Development", type: 'office',
+              director: 'Prof. Randy P. Asturias, D. Eng.', position: 'Vice Chancellor for Planning and Development',
+              contact: '09088104701', email: 'ovcpd@msugensan.edu.ph',
+              description: "The Office of the Vice Chancellor for Planning and Development leads the formulation, coordination, and monitoring of the university's strategic and development plans. It ensures that programs and initiatives are aligned with institutional priorities, national policies, and long-term goals.",
+            },
+            {
+              id: 'y-quamso', label: 'QuAMSO', fullName: "Quality Assurance Management Services Office", type: 'office',
+              director: 'Monsour A. Pelmin, PhD', position: 'QuAMSO Director',
+              contact: '09088105715', email: 'quamso@msugensan.edu.ph',
+              description: "The Quality Assurance Management Services Office (QuAMSO) acts as central coordinating office for all colleges and units in the University to ensure the establishment, implementation, maintenance and upscaling of the University Quality Management System (QMS), Accreditation System, as well as quality and quantity assurance mechanisms to be aligned in accordance with the University Vision, Mission, College Goals and Program Objectives.",
+            },
+          ],
+        },
+        {
+          label: 'Floor 2',
+          rooms: [
+            { id: 'wc1-yf2',     label: 'WC',   fullName: 'Bathroom (Left)',              type: 'wc'    },
+            { id: 'reg-adm',     label: 'ADM',  fullName: 'Admissions Office',             type: 'room'  },
+            { id: 'reg-scho',    label: 'SCH',  fullName: 'Scholarships Section',          type: 'room'  },
+            { id: 'reg-arch',    label: 'ARC',  fullName: 'Archives Room',                 type: 'room'  },
+            { id: 'reg-conf',    label: 'CONF', fullName: 'Conference Room',               type: 'room'  },
+            { id: 'wc2-yf2',     label: 'WC',   fullName: 'Bathroom (Right)',              type: 'wc'    },
+            { id: 'stair1-yf2',  label: '↑',    fullName: 'Staircase (Left)',              type: 'stair' },
+            { id: 'stair2-yf2',  label: '↑',    fullName: 'Staircase (Right)',             type: 'stair' },
+          ],
+        },
+      ],
+    },
+  ],
+};
 const COLLEGES = [
   { id: 1,  name: 'College of Agriculture',                           coords: [6.070480988321281,  125.12579094360856], status: 'Open', type: 'College' },
   { id: 2,  name: 'College of Engineering',                           coords: [6.064088002693254,  125.12683859876006], status: 'Open', type: 'College' },
@@ -126,8 +219,9 @@ function injectGlowStyle() {
 }
 
 // ── Inner component: has access to the Leaflet map instance ──────────────────
-function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef }) {
+function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef, buildingMarker, setBuildingMarker, openBuilding }) {
   const map = useMap();
+  const buildingMarkerRef = useRef(null);
 
   // Enforce bounds
   useEffect(() => {
@@ -162,6 +256,15 @@ function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef }) {
       }
     }, 900);
   }, [glowId, map, markerRefs]);
+
+  // Fly to building marker when buildingMarker changes
+  useEffect(() => {
+    if (!buildingMarker || !buildingMarker.coords) return;
+    map.flyTo(buildingMarker.coords, 18, { duration: 0.9 });
+    setTimeout(() => {
+      if (buildingMarkerRef.current) buildingMarkerRef.current.openPopup();
+    }, 1000);
+  }, [buildingMarker, map]);
 
   // Portal zoom buttons into the header slot
   function ZoomButtons() {
@@ -245,7 +348,7 @@ function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef }) {
           <button
             onClick={() => openDetail(item)}
             style={{
-              background: FACILITY_COLOR, color: '#000', border: 'none', borderRadius: '6px',
+              background: FACILITY_COLOR, color: '#fff', border: 'none', borderRadius: '6px',
               padding: '6px 18px', fontSize: '12px', fontFamily: "'Aventa', sans-serif",
               cursor: 'pointer', fontWeight: 600, letterSpacing: '0.04em',
             }}
@@ -300,6 +403,40 @@ function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef }) {
           >{facilityPopup(item)}</Popup>
         </Marker>
       ))}
+
+      {/* ── Temporary building marker (from "View on Map") ── */}
+      {buildingMarker && buildingMarker.coords && (
+        <Marker
+          position={buildingMarker.coords}
+          icon={collegeIcon}
+          ref={el => { buildingMarkerRef.current = el; }}
+        >
+          <Popup>
+            <div style={{ fontFamily: "'Aventa', sans-serif", minWidth: '200px', margin: 0 }}>
+              <div style={{ background: COLLEGE_COLOR, padding: '14px 36px 14px 14px', position: 'relative' }}>
+                {buildingMarker.code && (
+                  <p style={{ margin: '0 0 2px', fontSize: '11px', color: 'rgba(255,255,255,0.65)', letterSpacing: '0.08em' }}>
+                    {buildingMarker.code}
+                  </p>
+                )}
+                <strong style={{ color: '#fff', fontSize: '13px', lineHeight: 1.3, display: 'block' }}>
+                  {buildingMarker.name}
+                </strong>
+              </div>
+              <div style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => { setBuildingMarker(null); openBuilding(buildingMarker); }}
+                  style={{
+                    background: COLLEGE_COLOR, color: '#fff', border: 'none', borderRadius: '6px',
+                    padding: '6px 18px', fontSize: '12px', fontFamily: "'Aventa', sans-serif",
+                    cursor: 'pointer', fontWeight: 600, letterSpacing: '0.04em',
+                  }}
+                >View</button>
+              </div>
+            </div>
+          </Popup>
+        </Marker>
+      )}
     </>
   );
 }
@@ -319,6 +456,7 @@ export default function MapView({ onClose, targetId = null }) {
   const [buildingTab, setBuildingTab]           = useState('image'); // 'image' | 'plan'
   const [hoveredRoom, setHoveredRoom]           = useState(null);
   const [selectedFloor, setSelectedFloor]       = useState('floor1'); // 'floor1' | 'floor2'
+  const [buildingMarker, setBuildingMarker]     = useState(null); // { building, coords }
 
   const openBuilding = (building) => {
     setBuildingTab('image');
@@ -341,7 +479,18 @@ export default function MapView({ onClose, targetId = null }) {
     }, 300);
   };
 
-  useEffect(() => { injectGlowStyle(); }, []);
+  const viewOnMap = (building) => {
+    // Close both modals, then drop a temporary marker on the map
+    setBuildingVisible(false);
+    setTimeout(() => {
+      setSelectedBuilding(null);
+      setModalVisible(false);
+      setTimeout(() => {
+        setDetailItem(null);
+        setBuildingMarker(building);
+      }, 300);
+    }, 300);
+  };
 
   // If opened from homepage search, trigger glow after map has mounted
   useEffect(() => {
@@ -383,12 +532,12 @@ export default function MapView({ onClose, targetId = null }) {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden', background: '#e8e4dc' }}>
 
-      {/* ── Everything behind the modal blurs when detail is open ── */}
+      {/* ── Everything behind the modal blurs when detail or building modal is open ── */}
       <div style={{
         position: 'absolute', inset: 0,
         transition: 'filter 0.35s ease',
-        filter: detailItem ? 'blur(6px)' : 'none',
-        pointerEvents: detailItem ? 'none' : 'auto',
+        filter: (detailItem || selectedBuilding) ? 'blur(6px)' : 'none',
+        pointerEvents: (detailItem || selectedBuilding) ? 'none' : 'auto',
       }}>
 
         {/* ── Floating Header — hovers over the map ── */}
@@ -482,6 +631,9 @@ export default function MapView({ onClose, targetId = null }) {
             glowId={glowId}
             openDetail={openDetail}
             zoomPortalRef={zoomPortalRef}
+            buildingMarker={buildingMarker}
+            setBuildingMarker={setBuildingMarker}
+            openBuilding={openBuilding}
           />
         </MapContainer>
       </div>
@@ -558,7 +710,7 @@ export default function MapView({ onClose, targetId = null }) {
                 <img
                   src={LOGOS[detailItem.id]}
                   alt={`${detailItem.name} logo`}
-                  style={{ maxHeight: '140px', maxWidth: '80%', objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.12))' }}
+                  style={{ maxHeight: '190px', maxWidth: '90%', objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.12))' }}
                 />
               ) : (
                 <div style={{
@@ -601,7 +753,7 @@ export default function MapView({ onClose, targetId = null }) {
               flexDirection: 'column',
               gap: '14px',
             }}>
-              {(BUILDINGS[detailItem.id] || []).map(building => (
+              {(BUILDINGS[detailItem.id] || FACILITY_BUILDINGS[detailItem.id] || []).map(building => (
                 <div
                   key={building.id}
                   style={{
@@ -667,7 +819,8 @@ export default function MapView({ onClose, targetId = null }) {
                 </div>
               ))}
 
-              {(!BUILDINGS[detailItem.id] || BUILDINGS[detailItem.id].length === 0) && (
+              {((!BUILDINGS[detailItem.id] || BUILDINGS[detailItem.id].length === 0) &&
+                (!FACILITY_BUILDINGS[detailItem.id] || FACILITY_BUILDINGS[detailItem.id].length === 0)) && (
                 <p style={{
                   textAlign: 'center', color: '#bbb', fontSize: '12px',
                   fontFamily: "'Aventa', sans-serif", marginTop: '16px',
@@ -681,7 +834,9 @@ export default function MapView({ onClose, targetId = null }) {
       )}
 
       {/* ── Building Detail Modal ── */}
-      {selectedBuilding && (
+      {selectedBuilding && (() => {
+        const bldgColor = selectedBuilding.accentColor || COLLEGE_COLOR;
+        return (
         <div
           onClick={closeBuilding}
           style={{
@@ -724,7 +879,7 @@ export default function MapView({ onClose, targetId = null }) {
             {/* ── Top half: image / SVG floor plan viewer (40%) ── */}
             <div style={{
               flex: '0 0 40%', position: 'relative', overflow: 'hidden',
-              background: buildingTab === 'plan' ? COLLEGE_COLOR : '#1a1a1a',
+              background: buildingTab === 'plan' ? bldgColor : '#1a1a1a',
               transition: 'background 0.3s ease',
               borderRadius: '28px 28px 0 0',
               display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
@@ -791,11 +946,21 @@ export default function MapView({ onClose, targetId = null }) {
                 paddingBottom: '28px',
               }}>
                 {selectedBuilding.floors && selectedBuilding.floors.length > 0 ? (
+                  selectedBuilding.planType === 'ybldg' && selectedFloor === 'floor1' ? (
+                    <YBuildingFloorPlan
+                      floor={selectedBuilding.floors[0]}
+                      hoveredRoom={hoveredRoom}
+                      onRoomClick={id => setHoveredRoom(hoveredRoom === id ? null : id)}
+                      accentColor={bldgColor}
+                    />
+                  ) : (
                   <ICTFloorPlan
                     floor={selectedBuilding.floors[selectedFloor === 'floor1' ? 0 : 1]}
                     hoveredRoom={hoveredRoom}
                     onRoomClick={id => setHoveredRoom(hoveredRoom === id ? null : id)}
+                    accentColor={bldgColor}
                   />
+                  )
                 ) : (
                   <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontFamily: "'Aventa', sans-serif" }}>
                     No floor plan available
@@ -804,7 +969,7 @@ export default function MapView({ onClose, targetId = null }) {
               </div>
             </div>
 
-            {/* ── Center toggle pill: Image / Plan (aligned with 40% split) ── */}
+            {/* ── Center toggle pill: Image / Plan ── */}
             <div style={{
               position: 'absolute', left: '50%', top: '40%', transform: 'translate(-50%, -50%)',
               zIndex: 150,
@@ -823,7 +988,7 @@ export default function MapView({ onClose, targetId = null }) {
                     fontSize: '13px',
                     fontFamily: "'Aventa', sans-serif",
                     fontWeight: buildingTab === tab ? 700 : 500,
-                    background: buildingTab === tab ? COLLEGE_COLOR : 'transparent',
+                    background: buildingTab === tab ? bldgColor : 'transparent',
                     color: buildingTab === tab ? '#fff' : 'rgba(255,255,255,0.7)',
                     border: 'none', cursor: 'pointer',
                     transition: 'all 0.25s ease',
@@ -840,34 +1005,58 @@ export default function MapView({ onClose, targetId = null }) {
             {/* ── Bottom section (60%) ── */}
             <div style={{
               flex: '0 0 60%', display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'flex-start', overflow: 'auto',
-              padding: '48px 28px 20px',
+              alignItems: 'center', justifyContent: 'flex-start', overflow: 'hidden',
+              padding: '75px 28px 24px',
               position: 'relative',
             }}>
 
-              {/* Building name */}
-              <p style={{
-                margin: 0, fontSize: '22px', fontWeight: 700,
-                color: COLLEGE_COLOR, fontFamily: "'Aventa', sans-serif",
-                textAlign: 'center', letterSpacing: '-0.02em', lineHeight: 1.2,
-                flexShrink: 0,
+              {/* { TAG }  Building Name — inline on one row */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                gap: '10px', flexShrink: 0, width: '100%',
               }}>
-                {selectedBuilding.name}
-              </p>
+                {selectedBuilding.code && (
+                  <div style={{
+                    display: 'inline-flex', alignItems: 'center',
+                    background: `rgba(121,9,91,0.10)`,
+                    border: `1px solid rgba(121,9,91,0.22)`,
+                    borderRadius: '6px',
+                    padding: '3px 9px',
+                    flexShrink: 0,
+                  }}>
+                    <span style={{
+                      fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em',
+                      color: bldgColor, fontFamily: "'Aventa', sans-serif",
+                      textTransform: 'uppercase',
+                    }}>{selectedBuilding.code}</span>
+                  </div>
+                )}
+                <p style={{
+                  margin: 0, fontSize: '24px', fontWeight: 700,
+                  color: bldgColor, fontFamily: "'Aventa', sans-serif",
+                  letterSpacing: '-0.02em', lineHeight: 1.2,
+                }}>
+                  {selectedBuilding.name}
+                </p>
+              </div>
 
-              {/* Status | Rooms */}
-              <p style={{
-                margin: '6px 0 0', fontSize: '12px', color: '#888',
-                fontFamily: "'Aventa', sans-serif", textAlign: 'center',
-                letterSpacing: '0.04em', flexShrink: 0,
+              {/* Open | Rooms | Wifi — Wifi in green */}
+              <div style={{
+                marginTop: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                gap: '0', flexShrink: 0,
               }}>
-                Open&nbsp;&nbsp;|&nbsp;&nbsp;{selectedBuilding.rooms} Rooms
-              </p>
+                <span style={{ fontSize: '13px', color: '#888', fontFamily: "'Aventa', sans-serif", letterSpacing: '0.04em' }}>
+                  Open&nbsp;&nbsp;|&nbsp;&nbsp;{selectedBuilding.rooms} Rooms&nbsp;&nbsp;|&nbsp;&nbsp;
+                </span>
+                <span style={{ fontSize: '13px', color: '#27ae60', fontFamily: "'Aventa', sans-serif", letterSpacing: '0.04em', fontWeight: 600 }}>
+                  Wifi: Strong
+                </span>
+              </div>
 
               {/* Coordinates */}
               {selectedBuilding.coords && (
                 <p style={{
-                  margin: '3px 0 0', fontSize: '10px', color: '#bbb',
+                  margin: '3px 0 0', fontSize: '11.5px', color: '#bbb',
                   fontFamily: "'Aventa', sans-serif", textAlign: 'center',
                   letterSpacing: '0.04em', flexShrink: 0,
                 }}>
@@ -875,62 +1064,141 @@ export default function MapView({ onClose, targetId = null }) {
                 </p>
               )}
 
-              {/* Thin divider */}
+              {/* Info box — fixed height, always visible */}
               <div style={{
-                width: '36px', height: '1.5px', borderRadius: '2px',
-                background: COLLEGE_COLOR, opacity: 0.25,
-                margin: '14px auto 0', flexShrink: 0,
-              }} />
-
-              {/* Hovered room info & schedule */}
-              {hoveredRoom && selectedBuilding.floors && (() => {
-                const currentFloorIdx = selectedFloor === 'floor1' ? 0 : 1;
-                const currentFloor = selectedBuilding.floors[currentFloorIdx];
-                const room = currentFloor.rooms.find(r => r.id === hoveredRoom);
-                return room ? (
-                  <div style={{
-                    marginTop: '14px', width: '100%',
-                    display: 'flex', flexDirection: 'column', gap: '12px',
-                  }}>
-                    {/* Room name — no box */}
+                marginTop: '16px', width: '100%', flexShrink: 0,
+                padding: '16px 18px',
+                background: 'rgba(126,18,91,0.04)',
+                borderRadius: '12px',
+                border: `1px solid rgba(126,18,91,0.13)`,
+                height: '190px',
+                display: 'flex', flexDirection: 'column',
+                overflowY: 'auto',
+              }}>
+                {hoveredRoom && selectedBuilding.floors ? (() => {
+                  const currentFloor = selectedBuilding.floors[selectedFloor === 'floor1' ? 0 : 1];
+                  const room = currentFloor?.rooms.find(r => r.id === hoveredRoom);
+                  if (!room) return (
                     <p style={{
-                      margin: 0, fontSize: '13px', color: COLLEGE_COLOR,
-                      fontFamily: "'Aventa', sans-serif", fontWeight: 600, textAlign: 'center',
-                    }}>
-                      {room.fullName}
-                    </p>
+                      margin: 'auto', fontSize: '13px', color: '#ccc',
+                      fontFamily: "'Aventa', sans-serif", fontStyle: 'italic', textAlign: 'center',
+                    }}>Select a room to view its details.</p>
+                  );
 
-                    {/* Schedule — only show for rooms with schedules */}
-                    {room.schedule && room.schedule.length > 0 && (
-                      <div style={{
-                        padding: '14px 16px',
-                        background: 'rgba(126,18,91,0.05)', borderRadius: '12px',
-                        border: `1px solid rgba(126,18,91,0.15)`,
-                        flexShrink: 0,
-                      }}>
+                  /* ── OFFICE view ── */
+                  if (room.type === 'office') return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                      {/* Office name */}
+                      <p style={{
+                        margin: '0 0 10px', fontSize: '14px', color: '#1a1a1a',
+                        fontFamily: "'Aventa', sans-serif", fontWeight: 700,
+                      }}>{room.fullName}</p>
+
+                      {/* Director — inline */}
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '5px' }}>
+                        <span style={{ fontSize: '12px', color: '#aaa', fontFamily: "'Aventa', sans-serif", flexShrink: 0 }}>Director:</span>
+                        <span style={{ fontSize: '12px', color: '#2a2a2a', fontFamily: "'Aventa', sans-serif", fontWeight: 600 }}>
+                          {room.director}{room.position && <span style={{ fontWeight: 400, color: '#555' }}>, {room.position}</span>}
+                        </span>
+                      </div>
+
+                      {/* Contact — inline */}
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '5px' }}>
+                        <span style={{ fontSize: '12px', color: '#aaa', fontFamily: "'Aventa', sans-serif", flexShrink: 0 }}>Contact No.:</span>
+                        <span style={{ fontSize: '12px', color: '#2a2a2a', fontFamily: "'Aventa', sans-serif", fontWeight: 500 }}>{room.contact}</span>
+                      </div>
+
+                      {/* Email — inline */}
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '10px' }}>
+                        <span style={{ fontSize: '12px', color: '#aaa', fontFamily: "'Aventa', sans-serif", flexShrink: 0 }}>Email:</span>
+                        <span style={{ fontSize: '12px', color: '#2a2a2a', fontFamily: "'Aventa', sans-serif", fontWeight: 500 }}>{room.email}</span>
+                      </div>
+
+                      {/* Description */}
+                      {room.description && (
                         <p style={{
-                          margin: '0 0 10px', fontSize: '10px', color: COLLEGE_COLOR,
-                          fontFamily: "'Aventa', sans-serif", fontWeight: 700,
-                          letterSpacing: '0.1em', textTransform: 'uppercase',
-                        }}>
-                          Schedule
-                        </p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                          margin: 0, fontSize: '11.5px', color: '#666', lineHeight: 1.6,
+                          fontFamily: "'Aventa', sans-serif", fontWeight: 400,
+                          borderTop: '1px solid rgba(121,9,91,0.1)', paddingTop: '8px',
+                        }}>{room.description}</p>
+                      )}
+                    </div>
+                  );
+
+                  /* ── ROOM / schedule view ── */
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0', height: '100%' }}>
+                      <p style={{
+                        margin: '0 0 2px', fontSize: '14px', color: bldgColor,
+                        fontFamily: "'Aventa', sans-serif", fontWeight: 700,
+                      }}>{room.fullName}</p>
+                      <p style={{
+                        margin: '0 0 10px', fontSize: '11px', color: '#aaa',
+                        fontFamily: "'Aventa', sans-serif", fontWeight: 500,
+                        letterSpacing: '0.06em',
+                      }}>Schedule</p>
+                      {room.schedule && room.schedule.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           {room.schedule.map((item, idx) => (
                             <div key={idx} style={{
                               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                              fontSize: '11px', color: '#555', fontFamily: "'Aventa', sans-serif",
+                              fontSize: '12px', color: '#555', fontFamily: "'Aventa', sans-serif",
                             }}>
                               <span style={{ fontWeight: 600 }}>{item.code}</span>
-                              <span style={{ color: '#888', fontSize: '10px' }}>{item.time}</span>
+                              <span style={{ color: '#888', fontSize: '11.5px' }}>{item.time}</span>
                             </div>
                           ))}
                         </div>
-                      </div>
-                    )}
-                  </div>
-                ) : null;
-              })()}
+                      ) : (
+                        <p style={{
+                          margin: 0, fontSize: '12px', color: '#bbb',
+                          fontFamily: "'Aventa', sans-serif", fontStyle: 'italic',
+                        }}>No schedule available.</p>
+                      )}
+                    </div>
+                  );
+                })() : (
+                  <p style={{
+                    margin: 'auto', fontSize: '13px', color: '#ccc',
+                    fontFamily: "'Aventa', sans-serif", fontStyle: 'italic', textAlign: 'center',
+                  }}>Select a room to view its details.</p>
+                )}
+              </div>
+
+              {/* View on Map button */}
+              {selectedBuilding.coords && (
+                <button
+                  onClick={() => viewOnMap(selectedBuilding)}
+                  style={{
+                    marginTop: '16px',
+                    width: '100%',
+                    padding: '13px 0',
+                    background: bldgColor,
+                    border: 'none',
+                    borderRadius: '14px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    color: '#fff',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    fontFamily: "'Aventa', sans-serif",
+                    letterSpacing: '0.06em',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
+                    transition: 'opacity 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  View on Map
+                </button>
+              )}
             </div>
 
             {/* Back arrow — bottom left */}
@@ -939,9 +1207,8 @@ export default function MapView({ onClose, targetId = null }) {
               style={{
                 position: 'absolute', bottom: '18px', left: '22px',
                 background: 'none', border: 'none', cursor: 'pointer',
-                color: COLLEGE_COLOR, fontFamily: "'Aventa', sans-serif",
+                color: bldgColor, fontFamily: "'Aventa', sans-serif",
                 fontSize: '20px', fontWeight: 300, padding: '4px 8px',
-                opacity: 0.5, transition: 'opacity 0.15s',
                 zIndex: 50,
               }}
               onMouseEnter={e => e.currentTarget.style.opacity = '1'}
@@ -950,15 +1217,17 @@ export default function MapView({ onClose, targetId = null }) {
             >‹‹</button>
           </div>
         </div>
-      )}
+        );
+      })()}
 
     </div>
   );
 }
 
 // ── Single Floor SVG floor plan ────────────────────────────────────
-function ICTFloorPlan({ floor, hoveredRoom, onRoomClick }) {
+function ICTFloorPlan({ floor, hoveredRoom, onRoomClick, accentColor }) {
   if (!floor) return null;
+  const ACCENT = accentColor || COLLEGE_COLOR;
 
   // Overall canvas
   const W = 500;
@@ -967,7 +1236,7 @@ function ICTFloorPlan({ floor, hoveredRoom, onRoomClick }) {
 
   // Room layout structure
   const rooms = floor.rooms;
-  const mainRooms = rooms.filter(r => r.type === 'room');
+  const mainRooms = rooms.filter(r => r.type === 'room' || r.type === 'office');
   const wcLeft    = rooms.find(r => r.type === 'wc' && r.id.includes('wc1'));
   const wcRight   = rooms.find(r => r.type === 'wc' && r.id.includes('wc2'));
   const stairLeft = rooms.find(r => r.type === 'stair' && r.id.includes('stair1'));
@@ -1013,13 +1282,16 @@ function ICTFloorPlan({ floor, hoveredRoom, onRoomClick }) {
         const cx = x + w / 2;
         const cy = ROOM_H / 2;
         return (
-          <g key={room.id} onClick={() => onRoomClick(room.id)} style={{ cursor: 'pointer' }}>
+          <g key={room.id}
+            onClick={isWC ? undefined : () => onRoomClick(room.id)}
+            style={{ cursor: isWC ? 'default' : 'pointer' }}
+          >
             <rect
               x={x + 2.5} y={4} width={w - 5} height={ROOM_H - 2}
               rx="8"
-              fill={isHovered ? 'rgba(255,255,255,0.98)' : 'rgba(255,255,255,0.85)'}
-              stroke={isHovered ? '#fff' : 'rgba(255,255,255,0.5)'}
-              strokeWidth={isHovered ? 2.5 : 1.5}
+              fill={isWC ? 'rgba(255,255,255,0.55)' : (isHovered ? 'rgba(255,255,255,0.98)' : 'rgba(255,255,255,0.85)')}
+              stroke={isWC ? 'rgba(255,255,255,0.3)' : (isHovered ? '#fff' : 'rgba(255,255,255,0.5)')}
+              strokeWidth={isHovered && !isWC ? 2.5 : 1.5}
             />
             {isWC ? (
               <image
@@ -1027,10 +1299,8 @@ function ICTFloorPlan({ floor, hoveredRoom, onRoomClick }) {
                 x={cx - 12} y={cy - 12}
                 width="24" height="24"
                 style={{
-                  filter: isHovered
-                    ? 'brightness(0) saturate(100%) invert(11%) sepia(90%) saturate(3000%) hue-rotate(300deg) brightness(0.85)'
-                    : 'brightness(0) invert(1)',
-                  pointerEvents: 'none'
+                  filter: 'brightness(0) saturate(100%) invert(11%) sepia(90%) saturate(3000%) hue-rotate(300deg) brightness(0.7)',
+                  pointerEvents: 'none', opacity: 0.85,
                 }}
               />
             ) : (
@@ -1038,14 +1308,14 @@ function ICTFloorPlan({ floor, hoveredRoom, onRoomClick }) {
                 <text
                   x={cx} y={cy - 4}
                   textAnchor="middle"
-                  fill={isHovered ? COLLEGE_COLOR : '#2a2a2a'}
+                  fill={isHovered ? ACCENT : '#2a2a2a'}
                   fontSize="12" fontWeight="700" fontFamily="'Aventa', sans-serif"
                   style={{ pointerEvents: 'none' }}
                 >{room.label}</text>
                 <text
                   x={cx} y={cy + 8}
                   textAnchor="middle"
-                  fill={isHovered ? COLLEGE_COLOR : 'rgba(50,50,50,0.6)'}
+                  fill={isHovered ? ACCENT : 'rgba(50,50,50,0.6)'}
                   fontSize="7.5" fontFamily="'Aventa', sans-serif"
                   style={{ pointerEvents: 'none' }}
                 >{room.fullName.split(' ').slice(0, 2).join(' ')}</text>
@@ -1066,32 +1336,151 @@ function ICTFloorPlan({ floor, hoveredRoom, onRoomClick }) {
 
       {/* Stair cells */}
       {stairItems.map(({ room, x, w, y, h }) => {
-        const isHovered = hoveredRoom === room.id;
         const cx = x + w / 2;
         const cy = y + h / 2;
         return (
-          <g key={room.id} onClick={() => onRoomClick(room.id)} style={{ cursor: 'pointer' }}>
+          <g key={room.id} style={{ cursor: 'default' }}>
             <rect
               x={x + 2.5} y={y} width={w - 5} height={h}
               rx="6.5"
-              fill={isHovered ? 'rgba(255,255,255,0.98)' : 'rgba(255,255,255,0.85)'}
-              stroke={isHovered ? '#fff' : 'rgba(255,255,255,0.5)'}
-              strokeWidth={isHovered ? 2.5 : 1.5}
+              fill='rgba(255,255,255,0.55)'
+              stroke='rgba(255,255,255,0.3)'
+              strokeWidth={1.5}
             />
             <image
               href={stairsIcon}
               x={cx - 10} y={cy - 10}
               width="20" height="20"
               style={{
-                filter: isHovered
-                  ? 'brightness(0) saturate(100%) invert(11%) sepia(90%) saturate(3000%) hue-rotate(300deg) brightness(0.85)'
-                  : 'brightness(0) invert(1)',
-                pointerEvents: 'none'
+                filter: 'brightness(0) saturate(100%) invert(11%) sepia(90%) saturate(3000%) hue-rotate(300deg) brightness(0.7)',
+                pointerEvents: 'none', opacity: 0.85,
               }}
             />
           </g>
         );
       })}
+    </svg>
+  );
+}
+// ── Y Building First Floor SVG Plan ─────────────────────────────────────────
+// Coordinates measured directly from the reference image (firstfloor.png)
+function YBuildingFloorPlan({ floor, hoveredRoom, onRoomClick, accentColor }) {
+  if (!floor) return null;
+  const ACCENT = accentColor || FACILITY_COLOR;
+  const rooms = floor.rooms;
+  const byId = Object.fromEntries(rooms.map(r => [r.id, r]));
+
+  function Room({ id, x, y, w, h, rx = 6, labelLines }) {
+    const room = byId[id];
+    if (!room) return null;
+    const isHovered = hoveredRoom === id;
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    const lines = labelLines || [room.label];
+    const lineH = 10;
+    const totalTextH = lines.length * lineH;
+    return (
+      <g onClick={() => onRoomClick(id)} style={{ cursor: 'pointer' }}>
+        <rect x={x} y={y} width={w} height={h} rx={rx}
+          fill={isHovered ? 'rgba(255,255,255,0.97)' : 'rgba(255,255,255,0.86)'}
+          stroke={isHovered ? '#fff' : 'rgba(255,255,255,0.38)'}
+          strokeWidth={isHovered ? 2.5 : 1.2}
+          style={{ transition: 'fill 0.15s' }} />
+        {lines.map((line, i) => (
+          <text key={i} x={cx} y={cy - totalTextH / 2 + i * lineH + lineH * 0.82}
+            textAnchor="middle"
+            fill={isHovered ? ACCENT : '#1a1a1a'}
+            fontSize="11" fontWeight="700" fontFamily="'Aventa', sans-serif"
+            style={{ pointerEvents: 'none', transition: 'fill 0.15s' }}
+          >{line}</text>
+        ))}
+      </g>
+    );
+  }
+
+  /*
+   MEASURED FROM REFERENCE IMAGE (firstfloor.png ~780×555px):
+   
+   The image is landscape. Key proportional positions (as % of image w/h):
+   
+   Rotunda circle:  centre ~(50%, 64%),  radius ~9% of width  → cx=390 cy=355 r=70 on 780×555
+   
+   TOP WING (exits rotunda straight up, columns aligned ~40–67% x):
+     SMO:       left~38%, top~3%,   right~50%, bot~22%   → x=296 y=14  w=94  h=106
+     VCAA:      left~38%, top~25%,  right~50%, bot~49%   → x=296 y=136 w=94  h=132
+     Registrar: left~51%, top~3%,   right~67%, bot~49%   → x=400 y=14  w=124 h=254
+
+   LEFT WING (exits rotunda to the left, rows at ~54–70% y):
+     OC:        left~1%,  top~54%,  right~20%, bot~70%   → x=8   y=300 w=148 h=88
+     MCR:       left~21%, top~54%,  right~33%, bot~70%   → x=162 y=300 w=94  h=88
+     VCAF:      left~1%,  top~71%,  right~33%, bot~83%   → x=8   y=394 w=248 h=68
+
+   BOTTOM-RIGHT WING (exits rotunda bottom-right ~51–100% x, 58–100% y):
+     Cashier:   left~61%, top~59%,  right~75%, bot~72%   → x=474 y=328 w=110 h=72
+     QuAMSO:    left~77%, top~59%,  right~100%,bot~100%  → x=600 y=328 w=172 h=220
+     VCPD:      left~61%, top~73%,  right~75%, bot~100%  → x=474 y=408 w=110 h=136
+  */
+
+  // Canvas
+  const VBW = 780, VBH = 555;
+
+  // Rotunda
+  const RX = 390, RY = 355, RR = 68;
+
+  // TOP WING
+  const SMO_X=260, SMO_Y=14,  SMO_W=94,  SMO_H=108;
+  const VCA_X=260, VCA_Y=130, VCA_W=94,  VCA_H=134;
+  const REG_X=364, REG_Y=14,  REG_W=124, REG_H=250;
+
+  // WING_Y — shared top Y for both left and right wing top rows
+  const WING_Y = 298;
+
+  // LEFT WING
+  const OC_X=8,   OC_Y=WING_Y, OC_W=148, OC_H=90;
+  const MC_X=162, MC_Y=WING_Y, MC_W=94,  MC_H=90;
+  const VF_X=8,   VF_Y=WING_Y+OC_H+6, VF_W=248, VF_H=70;
+
+  // BOTTOM-RIGHT WING — top row at same WING_Y as left wing
+  const CA_X=474, CA_Y=WING_Y, CA_W=112, CA_H=74;
+  const QU_X=594, QU_Y=WING_Y, QU_W=172, QU_H=WING_Y+OC_H+6+VF_H - WING_Y; // matches VCAF bottom
+  const VP_X=474, VP_Y=WING_Y+CA_H+6, VP_W=112, VP_H=QU_H-(CA_H+6);
+
+  // Corridors
+  const topCorrX = 330, topCorrY = VCA_Y + VCA_H + 2, topCorrW = 34, topCorrH = RY - RR - topCorrY;
+  const lCorrX = MC_X + MC_W, lCorrY = 328, lCorrW = RX - RR - lCorrX, lCorrH = 34;
+  const brCorrX = RX + RR, brCorrY = RY, brCorrW = CA_X - (RX + RR), brCorrH = 32;
+
+  return (
+    <svg viewBox={`0 0 ${VBW} ${VBH}`}
+      style={{ width: '100%', height: 'auto', maxHeight: '100%' }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* Corridors */}
+      <rect x={topCorrX} y={topCorrY} width={topCorrW} height={topCorrH} fill="rgba(255,255,255,0.10)" />
+      <rect x={lCorrX} y={lCorrY} width={lCorrW} height={lCorrH} fill="rgba(255,255,255,0.10)" />
+      <rect x={brCorrX} y={brCorrY} width={brCorrW} height={brCorrH} fill="rgba(255,255,255,0.10)" />
+
+      {/* Rotunda */}
+      <circle cx={RX} cy={RY} r={RR}
+        fill="rgba(255,255,255,0.13)" stroke="rgba(255,255,255,0.38)" strokeWidth="2" />
+      <text x={RX} y={RY} textAnchor="middle" dominantBaseline="middle"
+        fill="rgba(255,255,255,0.55)" fontSize="9" fontFamily="'Aventa', sans-serif"
+        fontWeight="700" letterSpacing="1.2">LOBBY</text>
+
+      {/* TOP WING */}
+      <Room id="y-smo"       x={SMO_X} y={SMO_Y} w={SMO_W} h={SMO_H} labelLines={['Supply Mgmt', 'Office (SMO)']} />
+      <Room id="y-vcaa"      x={VCA_X} y={VCA_Y} w={VCA_W} h={VCA_H} labelLines={['Office of the VC', 'for Academic', 'Affairs']} />
+      <Room id="y-registrar" x={REG_X} y={REG_Y} w={REG_W} h={REG_H} labelLines={['Office of the', 'University', 'Registrar']} />
+
+      {/* LEFT WING */}
+      <Room id="y-oc"       x={OC_X} y={OC_Y} w={OC_W} h={OC_H} labelLines={['Office of the', 'Chancellor (Old)']} />
+      <Room id="y-confroom" x={MC_X} y={MC_Y} w={MC_W} h={MC_H} labelLines={['Mini Conference', 'Room']} />
+      <Room id="y-vcaf"     x={VF_X} y={VF_Y} w={VF_W} h={VF_H} labelLines={['Office of the Vice Chancellor', 'for Administration and Finance']} />
+
+      {/* BOTTOM-RIGHT WING */}
+      <Room id="y-cashier" x={CA_X} y={CA_Y} w={CA_W} h={CA_H} labelLines={['Cashier']} />
+      <Room id="y-quamso"  x={QU_X} y={QU_Y} w={QU_W} h={QU_H} labelLines={['Quality Assurance', 'Management', 'Services Office']} />
+      <Room id="y-vcpd"    x={VP_X} y={VP_Y} w={VP_W} h={VP_H} labelLines={['Office of the VC', 'for Planning &', 'Development']} />
     </svg>
   );
 }

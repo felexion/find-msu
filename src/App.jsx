@@ -11,10 +11,7 @@ console.warn = (...args) => {
 
 // IMPORT ASSETS
 import logo from './images/find_styled.png';
-import coworkingIcon from './images/coworking.png';
-import wifiIcon from './images/router-wifi-alt.png';
-import calendarIcon from './images/calendar-clock.png';
-import gpsIcon from './images/gps-navigation.png';
+import regionPinIcon from './images/region-pin-alt.png';
 
 export default function App() {
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -309,71 +306,20 @@ export default function App() {
               )}
             </div>
 
-            {/* 2. MATCHING GRID BLOCK (Inherits max-w-xl directly from parent wrapper) */}
-            <div className="grid grid-cols-4 gap-4 w-full">
-              
-              {/* BUTTON 1 - ROOM AVAILABILITY */}
-              <button 
-                className="group flex flex-col items-center space-y-2.5 focus:outline-none"
-                onClick={(e) => { e.stopPropagation(); openMap(); }}
-              >
-                {/* p-6 makes the inner graphic look smaller and crisp inside the square */}
-                <div className="w-full aspect-square flex items-center justify-center bg-white/15 border border-white/10 hover:bg-white/20 active:scale-95 rounded-2xl transition duration-200 backdrop-blur-md shadow-lg p-6">
-                  <img 
-                    src={coworkingIcon} 
-                    alt="Room Availability"
-                    className="w-full h-full object-contain invert brightness-200 group-hover:scale-105 transition-transform" 
-                  />
-                </div>
-                <span className="text-[11px] font-light tracking-wide text-white/90">Room Availability</span>
-              </button>
-
-              {/* BUTTON 2 - TEST WI-FI */}
-              <button 
-                className="group flex flex-col items-center space-y-2.5 focus:outline-none"
-                onClick={(e) => { e.stopPropagation(); openMap(); }}
-              >
-                <div className="w-full aspect-square flex items-center justify-center bg-white/15 border border-white/10 hover:bg-white/20 active:scale-95 rounded-2xl transition duration-200 backdrop-blur-md shadow-lg p-6">
-                  <img 
-                    src={wifiIcon} 
-                    alt="Test Wi-Fi"
-                    className="w-full h-full object-contain invert brightness-200 group-hover:scale-105 transition-transform" 
-                  />
-                </div>
-                <span className="text-[11px] font-light tracking-wide text-white/90">Test Wi-Fi</span>
-              </button>
-
-              {/* BUTTON 3 - ROOM SCHEDULES */}
-              <button 
-                className="group flex flex-col items-center space-y-2.5 focus:outline-none"
-                onClick={(e) => { e.stopPropagation(); openMap(); }}
-              >
-                <div className="w-full aspect-square flex items-center justify-center bg-white/15 border border-white/10 hover:bg-white/20 active:scale-95 rounded-2xl transition duration-200 backdrop-blur-md shadow-lg p-6">
-                  <img 
-                    src={calendarIcon} 
-                    alt="Room Schedules"
-                    className="w-full h-full object-contain invert brightness-200 group-hover:scale-105 transition-transform" 
-                  />
-                </div>
-                <span className="text-[11px] font-light tracking-wide text-white/90">Room Schedules</span>
-              </button>
-
-              {/* BUTTON 4 - NAVIGATION */}
-              <button 
-                className="group flex flex-col items-center space-y-2.5 focus:outline-none"
-                onClick={(e) => { e.stopPropagation(); openMap(); }}
-              >
-                <div className="w-full aspect-square flex items-center justify-center bg-white/15 border border-white/10 hover:bg-white/20 active:scale-95 rounded-2xl transition duration-200 backdrop-blur-md shadow-lg p-6">
-                  <img 
-                    src={gpsIcon} 
-                    alt="Shortest Route"
-                    className="w-full h-full object-contain invert brightness-200 group-hover:scale-105 transition-transform" 
-                  />
-                </div>
-                <span className="text-[11px] font-light tracking-wide text-white/90">Navigate Campus</span>
-              </button>
-
-            </div>
+            {/* 2. VIEW CAMPUS BUTTON */}
+            <button
+              className="group flex flex-col items-center space-y-2.5 focus:outline-none"
+              onClick={(e) => { e.stopPropagation(); openMap(); }}
+            >
+              <div className="w-40 aspect-square flex items-center justify-center bg-white/15 border border-white/10 hover:bg-white/20 active:scale-95 rounded-2xl transition duration-200 backdrop-blur-md shadow-lg p-8">
+                <img
+                  src={regionPinIcon}
+                  alt="View Campus"
+                  className="w-full h-full object-contain invert brightness-200 group-hover:scale-105 transition-transform"
+                />
+              </div>
+              <span className="text-sm font-light tracking-wide text-white/90">View Campus</span>
+            </button>
 
           </div>
         </div>
