@@ -5,6 +5,8 @@ import L from 'leaflet';
 import logo from './images/find_styled.png';
 import findIcon from './images/find-icon.png';
 import leftIcon from './images/left.png';
+import gpsNavIcon from './images/gps-navigation.png';
+import rectListIcon from './images/rectangle-list.png';
 import escBtn from './images/esc-btn.png';
 import cnsmLogo from './images/cnsm.png';
 import toiletIcon from './images/restroom-simple.png';
@@ -174,14 +176,14 @@ const FACILITY_BUILDINGS = {
   ],
 };
 const COLLEGES = [
-  { id: 1,  name: 'College of Agriculture',                           coords: [6.070480988321281,  125.12579094360856], status: 'Open', type: 'College' },
-  { id: 2,  name: 'College of Engineering',                           coords: [6.064088002693254,  125.12683859876006], status: 'Open', type: 'College' },
-  { id: 3,  name: 'College of Education',                             coords: [6.067896313435069,  125.12825013296172], status: 'Open', type: 'College' },
-  { id: 4,  name: 'College of Fisheries and Aquatic Sciences',        coords: [6.0644563163346765, 125.13004240242738], status: 'Open', type: 'College' },
-  { id: 5,  name: 'College of Business Administration & Accountancy', coords: [6.06423760601592,   125.12834992857071], status: 'Open', type: 'College' },
-  { id: 6,  name: 'College of Social Sciences and Humanities',        coords: [6.06774358929378,   125.12610972165167], status: 'Open', type: 'College' },
-  { id: 7,  name: 'College of Natural Sciences and Mathematics',      coords: [6.069067815786466,  125.12589392474057], status: 'Open', type: 'College' },
-  { id: 8,  name: 'Senior Highschool Department',                     coords: [6.068557633415351,  125.12830040933797], status: 'Open', type: 'College' },
+  { id: 1,  name: 'College of Agriculture',                           code: 'COA',  coords: [6.070480988321281,  125.12579094360856], status: 'Open', type: 'College' },
+  { id: 2,  name: 'College of Engineering',                           code: 'COE',  coords: [6.064088002693254,  125.12683859876006], status: 'Open', type: 'College' },
+  { id: 3,  name: 'College of Education',                             code: 'COED', coords: [6.067896313435069,  125.12825013296172], status: 'Open', type: 'College' },
+  { id: 4,  name: 'College of Fisheries and Aquatic Sciences',        code: 'COF',  coords: [6.0644563163346765, 125.13004240242738], status: 'Open', type: 'College' },
+  { id: 5,  name: 'College of Business Administration & Accountancy', code: 'CBAA', coords: [6.06423760601592,   125.12834992857071], status: 'Open', type: 'College' },
+  { id: 6,  name: 'College of Social Sciences and Humanities',        code: 'CSSH', coords: [6.06774358929378,   125.12610972165167], status: 'Open', type: 'College' },
+  { id: 7,  name: 'College of Natural Sciences and Mathematics',      code: 'CNSM', coords: [6.069067815786466,  125.12589392474057], status: 'Open', type: 'College' },
+  { id: 8,  name: 'Senior Highschool Department',                     code: 'SHS',  coords: [6.068557633415351,  125.12830040933797], status: 'Open', type: 'College' },
 ];
 
 const FACILITIES = [
@@ -191,9 +193,46 @@ const FACILITIES = [
   { id: 104, name: 'Office of Student Affairs',       coords: [6.069841842030108, 125.12412084582711], status: 'Open', type: 'Facility' },
   { id: 105, name: 'Laktanan',                        coords: [6.066323469760834, 125.12839000321954], status: 'Open', type: 'Facility' },
   { id: 106, name: 'VLS (Virtual Learning Studio)',   coords: [6.067222222222222, 125.12763888888888], status: 'Open', type: 'Facility' },
+  { id: 107, name: 'University Infirmary',            coords: [6.065174012112744,  125.12328029288801], status: 'Open', type: 'Facility' },
 ];
 
-const ALL_ITEMS = [...COLLEGES, ...FACILITIES];
+// ── Secondary dot-only locations (no modal) ───────────────────────────────────
+// These show as small coloured circles on the map and are searchable.
+// IDs start at 200+ to avoid collision with main markers.
+const EXTRA_COLLEGES = [
+  { id: 201, name: 'Institute of Islamic, Arabic & International Studies', coords: [6.070908146976309, 125.12745455283785], status: 'Open', type: 'Institute' },
+  { id: 202, name: 'SSC Building',                                         coords: [6.068957784834432, 125.12482383583192], status: 'Open', type: 'Building'  },
+  { id: 203, name: 'Regional Science Research Center',                     coords: [6.069800666160386, 125.125835670486],   status: 'Open', type: 'Building'  },
+  { id: 204, name: 'ROTC Headquarters',                                    coords: [6.063157819644279, 125.12783270375334], status: 'Open', type: 'Building'  },
+  { id: 205, name: 'ICT Building',                                         coords: [6.065338721556866, 125.12767722597256], status: 'Open', type: 'Building'  },
+  { id: 206, name: 'ICT Complex',                                          coords: [6.069115927450321, 125.12674627794516], status: 'Open', type: 'Building'  },
+  { id: 207, name: 'IT/Physics Department',                                coords: [6.069610682801607, 125.1263247496069],  status: 'Open', type: 'Building'  },
+];
+
+const EXTRA_FACILITIES = [
+  { id: 302, name: 'Alumni Park',           coords: [6.067744143076113,  125.12394121823431], status: 'Open', type: 'Facility'   },
+  { id: 303, name: 'Boys Dorm (Main)',      coords: [6.070705025510415,  125.12419236220188], status: 'Open', type: 'Dormitory'  },
+  { id: 304, name: 'Girls Dorm (Main)',     coords: [6.068778264559637,  125.12436874823007], status: 'Open', type: 'Dormitory'  },
+  { id: 305, name: 'Girls Dorm (Annex)',    coords: [6.064380888138415,  125.12424491023336], status: 'Open', type: 'Dormitory'  },
+  { id: 306, name: 'Boys Dorm (Annex)',     coords: [6.063938009607605,  125.12485131290474], status: 'Open', type: 'Dormitory'  },
+  { id: 307, name: 'Alumni Pavilion',       coords: [6.066760016344999,  125.12845911413804], status: 'Open', type: 'Building'   },
+  { id: 308, name: 'Mosque',                coords: [6.06668695352738,   125.1226887754368],  status: 'Open', type: 'Building'   },
+  { id: 309, name: 'Open Court',            coords: [6.066232412609107,  125.12380032630378], status: 'Open', type: 'Building'   },
+  { id: 310, name: 'Quadrangle',            coords: [6.0658170898974895, 125.12626962490214], status: 'Open', type: 'Field'      },
+];
+
+const GATES = [
+  { id: 311, name: 'Main Gate',  coords: [6.0657072972022075, 125.13180336952652], status: 'Open', type: 'Entrance/Exit' },
+  { id: 312, name: 'Back Gate',  coords: [6.065494286706529,  125.12212504400082], status: 'Open', type: 'Entrance/Exit' },
+];
+
+const ALL_ITEMS = [
+  ...COLLEGES,
+  ...FACILITIES,
+  ...EXTRA_COLLEGES,
+  ...EXTRA_FACILITIES,
+  ...GATES,
+];
 
 const CAMPUS_BOUNDS = L.latLngBounds(
   L.latLng(6.0620, 125.1210),
@@ -219,6 +258,85 @@ function injectGlowStyle() {
 }
 
 // ── Inner component: has access to the Leaflet map instance ──────────────────
+// ── Right-side floating control panel (inside MapContainer so useMap works) ──
+function MapZoomPanel({ onClose }) {
+  const map = useMap();
+  const BTN = {
+    width: '48px', height: '48px', borderRadius: '12px',
+    background: COLLEGE_COLOR, border: 'none',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    cursor: 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,0.22)',
+    transition: 'opacity 0.15s, transform 0.1s',
+    position: 'relative', flexShrink: 0,
+  };
+  const [hovered, setHovered] = React.useState(null);
+  const tooltip = (label) => hovered === label ? (
+    <div style={{
+      position: 'absolute', right: '58px', top: '50%', transform: 'translateY(-50%)',
+      background: 'rgba(0,0,0,0.80)', color: '#fff', fontSize: '11px',
+      fontFamily: "'Aventa', sans-serif", fontWeight: 600, letterSpacing: '0.04em',
+      padding: '5px 10px', borderRadius: '6px', whiteSpace: 'nowrap',
+      pointerEvents: 'none', zIndex: 10,
+    }}>{label}</div>
+  ) : null;
+
+  return (
+    <div style={{
+      position: 'absolute', right: '20px', bottom: '24px',
+      zIndex: 600, display: 'flex', flexDirection: 'column',
+      alignItems: 'center', gap: '8px',
+    }}>
+      {/* Top group: Back, Navigate, All Locations */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <button style={BTN} onClick={onClose}
+          onMouseEnter={() => setHovered('Return to Homepage')} onMouseLeave={() => setHovered(null)}
+          onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'} onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          {tooltip('Return to Homepage')}
+          <img src={leftIcon} alt="Back" style={{ width: '22px', height: '22px', objectFit: 'contain', filter: 'invert(1) brightness(2)' }} />
+        </button>
+        <button style={BTN}
+          onMouseEnter={() => setHovered('Navigate Campus')} onMouseLeave={() => setHovered(null)}
+          onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'} onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          {tooltip('Navigate Campus')}
+          <img src={gpsNavIcon} alt="Navigate" style={{ width: '22px', height: '22px', objectFit: 'contain', filter: 'invert(1) brightness(2)' }} />
+        </button>
+        <button style={BTN}
+          onMouseEnter={() => setHovered('View All Locations')} onMouseLeave={() => setHovered(null)}
+          onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'} onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          {tooltip('View All Locations')}
+          <img src={rectListIcon} alt="All Locations" style={{ width: '22px', height: '22px', objectFit: 'contain', filter: 'invert(1) brightness(2)' }} />
+        </button>
+      </div>
+
+      {/* Spacer */}
+      <div style={{ height: '16px' }} />
+
+      {/* Bottom group: Zoom In, Zoom Out */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <button style={{ ...BTN, fontSize: '24px', fontWeight: 700, color: '#fff', fontFamily: 'sans-serif' }}
+          onClick={() => map.zoomIn()}
+          onMouseEnter={() => setHovered('Zoom In')} onMouseLeave={() => setHovered(null)}
+          onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'} onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          {tooltip('Zoom In')}
+          +
+        </button>
+        <button style={{ ...BTN, fontSize: '24px', fontWeight: 700, color: '#fff', fontFamily: 'sans-serif' }}
+          onClick={() => map.zoomOut()}
+          onMouseEnter={() => setHovered('Zoom Out')} onMouseLeave={() => setHovered(null)}
+          onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'} onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          {tooltip('Zoom Out')}
+          −
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef, buildingMarker, setBuildingMarker, openBuilding }) {
   const map = useMap();
   const buildingMarkerRef = useRef(null);
@@ -236,22 +354,21 @@ function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef, buildingMarke
     // Clear any previous glow
     document.querySelectorAll('.marker-glow').forEach(el => el.classList.remove('marker-glow'));
 
-    const ref = markerRefs.current[glowId];
-    if (!ref) return;
-
     const item = ALL_ITEMS.find(i => i.id === glowId);
     if (!item) return;
 
     map.flyTo(item.coords, 17, { duration: 0.8 });
 
+    const ref = markerRefs.current[glowId];
+    if (!ref) return; // extra dot markers may not have popups — just fly-to is enough
+
     setTimeout(() => {
-      // Open the popup
-      ref.openPopup();
+      // Open the popup (main markers only)
+      try { ref.openPopup(); } catch (_) {}
       // Add glow to the marker's DOM element
       const markerEl = ref.getElement();
       if (markerEl) {
         markerEl.classList.add('marker-glow');
-        // Remove glow after 5s
         setTimeout(() => markerEl.classList.remove('marker-glow'), 5000);
       }
     }, 900);
@@ -266,47 +383,8 @@ function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef, buildingMarke
     }, 1000);
   }, [buildingMarker, map]);
 
-  // Portal zoom buttons into the header slot
-  function ZoomButtons() {
-    if (!zoomPortalRef.current) return null;
-    return ReactDOM.createPortal(
-      <div style={{ display: 'flex', gap: '8px' }}>
-        <button
-          onClick={() => map.zoomIn()}
-          style={{
-            width: '40px', height: '40px', borderRadius: '50%',
-            background: '#fff', border: '1.5px solid rgba(121,9,91,0.15)',
-            color: COLLEGE_COLOR, fontSize: '20px', fontWeight: 700,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-            transition: 'background 0.15s, transform 0.1s', userSelect: 'none',
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = '#faf5f9'}
-          onMouseLeave={e => e.currentTarget.style.background = '#fff'}
-          onMouseDown={e => e.currentTarget.style.transform = 'scale(0.93)'}
-          onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
-          title="Zoom in"
-        >+</button>
-        <button
-          onClick={() => map.zoomOut()}
-          style={{
-            width: '40px', height: '40px', borderRadius: '50%',
-            background: '#fff', border: '1.5px solid rgba(121,9,91,0.15)',
-            color: COLLEGE_COLOR, fontSize: '20px', fontWeight: 700,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-            transition: 'background 0.15s, transform 0.1s', userSelect: 'none',
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = '#faf5f9'}
-          onMouseLeave={e => e.currentTarget.style.background = '#fff'}
-          onMouseDown={e => e.currentTarget.style.transform = 'scale(0.93)'}
-          onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
-          title="Zoom out"
-        >−</button>
-      </div>,
-      zoomPortalRef.current
-    );
-  }
+  // Zoom handled by fixed right-side panel — no portal needed
+  function ZoomButtons() { return null; }
 
   function collegePopup(item) {
     return (
@@ -316,7 +394,7 @@ function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef, buildingMarke
             {item.type.toUpperCase()}
           </p>
           <strong style={{ color: '#fff', fontSize: '13px', lineHeight: 1.3, display: 'block' }}>
-            View {item.name}?
+            {item.name}
           </strong>
         </div>
         <div style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
@@ -341,7 +419,7 @@ function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef, buildingMarke
             {item.type.toUpperCase()}
           </p>
           <strong style={{ color: '#000', fontSize: '13px', lineHeight: 1.3, display: 'block' }}>
-            View {item.name}?
+            {item.name}
           </strong>
         </div>
         <div style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
@@ -368,6 +446,25 @@ function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef, buildingMarke
     className: '',
     html: `<img src="${findIcon}" style="width:40px;height:40px;filter:invert(75%) sepia(80%) saturate(600%) hue-rotate(5deg) brightness(105%);" />`,
     iconSize: [40, 40], iconAnchor: [20, 40], popupAnchor: [0, -40],
+  });
+
+  // Small dot icons for secondary locations
+  const dotMagenta = L.divIcon({
+    className: '',
+    html: `<div style="width:13px;height:13px;border-radius:50%;background:${COLLEGE_COLOR};border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.35);"></div>`,
+    iconSize: [13, 13], iconAnchor: [6, 6], popupAnchor: [0, -10],
+  });
+
+  const dotAmber = L.divIcon({
+    className: '',
+    html: `<div style="width:13px;height:13px;border-radius:50%;background:#f0ad3e;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.35);"></div>`,
+    iconSize: [13, 13], iconAnchor: [6, 6], popupAnchor: [0, -10],
+  });
+
+  const gateIcon = L.divIcon({
+    className: '',
+    html: `<div style="width:15px;height:15px;border-radius:50%;background:#e03030;border:2.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,0.4);"></div>`,
+    iconSize: [15, 15], iconAnchor: [7, 7], popupAnchor: [0, -12],
   });
 
   return (
@@ -401,6 +498,61 @@ function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef, buildingMarke
               add: (e) => { const btn = e.target._closeButton; if (btn) btn.classList.add('dark-close'); }
             }}
           >{facilityPopup(item)}</Popup>
+        </Marker>
+      ))}
+
+      {/* ── Extra dot markers — colleges/buildings (magenta) ── */}
+      {EXTRA_COLLEGES.map(item => (
+        <Marker
+          key={item.id}
+          position={item.coords}
+          icon={dotMagenta}
+          ref={el => { if (el) markerRefs.current[item.id] = el; }}
+        >
+          <Popup>
+            <div style={{ fontFamily: "'Aventa', sans-serif", padding: '10px 14px', minWidth: '160px' }}>
+              <p style={{ margin: '0 0 2px', fontSize: '10px', color: '#aaa', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{item.type}</p>
+              <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: COLLEGE_COLOR }}>{item.name}</p>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+
+      {/* ── Extra dot markers — facilities/other (amber) ── */}
+      {EXTRA_FACILITIES.map(item => (
+        <Marker
+          key={item.id}
+          position={item.coords}
+          icon={dotAmber}
+          ref={el => { if (el) markerRefs.current[item.id] = el; }}
+        >
+          <Popup
+            eventHandlers={{
+              add: (e) => { const btn = e.target._closeButton; if (btn) btn.classList.add('dark-close'); }
+            }}
+          >
+            <div style={{ fontFamily: "'Aventa', sans-serif", padding: '10px 14px', minWidth: '160px' }}>
+              <p style={{ margin: '0 0 2px', fontSize: '10px', color: '#aaa', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{item.type}</p>
+              <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#b07d00' }}>{item.name}</p>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+
+      {/* ── Gate markers — red ── */}
+      {GATES.map(item => (
+        <Marker
+          key={item.id}
+          position={item.coords}
+          icon={gateIcon}
+          ref={el => { if (el) markerRefs.current[item.id] = el; }}
+        >
+          <Popup>
+            <div style={{ fontFamily: "'Aventa', sans-serif", padding: '10px 14px', minWidth: '160px' }}>
+              <p style={{ margin: '0 0 2px', fontSize: '10px', color: '#aaa', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{item.type}</p>
+              <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#e03030' }}>{item.name}</p>
+            </div>
+          </Popup>
         </Marker>
       ))}
 
@@ -453,13 +605,13 @@ export default function MapView({ onClose, targetId = null }) {
   const [glowId, setGlowId]                     = useState(null);
   const [selectedBuilding, setSelectedBuilding] = useState(null);
   const [buildingVisible, setBuildingVisible]   = useState(false);
-  const [buildingTab, setBuildingTab]           = useState('image'); // 'image' | 'plan'
+  const [buildingTab, setBuildingTab]           = useState('plan'); // 'image' | 'plan'
   const [hoveredRoom, setHoveredRoom]           = useState(null);
   const [selectedFloor, setSelectedFloor]       = useState('floor1'); // 'floor1' | 'floor2'
   const [buildingMarker, setBuildingMarker]     = useState(null); // { building, coords }
 
   const openBuilding = (building) => {
-    setBuildingTab('image');
+    setBuildingTab('plan');
     setSelectedFloor('floor1');
     setHoveredRoom(null);
     // Fade out college modal, then fade in building modal
@@ -517,7 +669,11 @@ export default function MapView({ onClose, targetId = null }) {
     if (!q.trim()) { setSearchResults([]); return; }
     const lower = q.toLowerCase();
     setSearchResults(
-      ALL_ITEMS.filter(i => i.name.toLowerCase().includes(lower) || i.type.toLowerCase().includes(lower))
+      ALL_ITEMS.filter(i =>
+        i.name.toLowerCase().includes(lower) ||
+        i.type.toLowerCase().includes(lower) ||
+        (i.code && i.code.toLowerCase().includes(lower))
+      )
     );
   };
 
@@ -568,49 +724,61 @@ export default function MapView({ onClose, targetId = null }) {
 
           {/* Dropdown results */}
           {searchResults.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl overflow-hidden z-[600] border border-gray-100">
-              {searchResults.map(item => (
-                <button
-                  key={item.id}
-                  onClick={e => { e.stopPropagation(); handleResultClick(item); }}
-                  className="w-full px-5 py-3.5 text-left hover:bg-purple-50 active:bg-purple-100 transition-colors duration-150 border-b border-gray-100 last:border-b-0 focus:outline-none flex items-center gap-3"
-                >
-                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: item.type === 'Facility' ? FACILITY_COLOR : COLLEGE_COLOR }} />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 leading-tight">{item.name}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{item.type}</p>
-                  </div>
-                </button>
-              ))}
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl overflow-hidden z-[600] border border-gray-100" style={{ maxHeight: '340px', overflowY: 'auto' }}>
+              {searchResults.map(item => {
+                const isFacilityType = ['Facility', 'Dormitory', 'Building', 'Field', 'Entrance'].includes(item.type);
+                const dotColor = isFacilityType ? FACILITY_COLOR : COLLEGE_COLOR;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={e => { e.stopPropagation(); handleResultClick(item); }}
+                    className="w-full px-5 py-3.5 text-left hover:bg-purple-50 active:bg-purple-100 transition-colors duration-150 border-b border-gray-100 last:border-b-0 focus:outline-none flex items-center gap-3"
+                  >
+                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: dotColor }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 leading-tight">{item.name}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{item.type}</p>
+                    </div>
+                    {item.code && (
+                      <span style={{
+                        fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em',
+                        color: COLLEGE_COLOR, background: `${COLLEGE_COLOR}12`,
+                        border: `1px solid ${COLLEGE_COLOR}28`,
+                        borderRadius: '5px', padding: '2px 7px', flexShrink: 0,
+                        fontFamily: "'Aventa', sans-serif",
+                      }}>{item.code}</span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
 
-        {/* Zoom portal target */}
-        <div ref={zoomPortalRef} className="flex gap-2 flex-shrink-0" />
-
-        {/* Back button */}
-        <button
-          onClick={onClose}
-          className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg hover:opacity-90 active:scale-95 transition-all duration-150"
-          style={{ backgroundColor: COLLEGE_COLOR }}
-          title="Go back"
-        >
-          <img src={leftIcon} alt="Back" className="w-6 h-6 object-contain invert brightness-200" />
-        </button>
-      </div>
+      </div>{/* end floating header */}
 
       {/* ── Legend ── */}
-      <div className="absolute bottom-6 left-6 z-[500] bg-white border border-gray-200 rounded-xl p-4 shadow-xl text-sm space-y-2.5">
-        <h3 className="text-xs font-semibold tracking-wide text-gray-800 mb-3">MSU General Santos</h3>
+      <div className="absolute bottom-6 left-6 z-[500] bg-white border border-gray-200 rounded-xl p-4 shadow-xl text-sm space-y-2">
+        <h3 className="text-xs font-semibold tracking-wide text-gray-800 mb-2">MSU General Santos</h3>
         <div className="flex items-center space-x-2.5">
-          <span className="w-3.5 h-3.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLLEGE_COLOR }} />
+          <img src={findIcon} style={{ width: '14px', height: '14px', filter: 'invert(11%) sepia(90%) saturate(3000%) hue-rotate(300deg) brightness(80%)' }} alt="" />
           <span className="text-xs text-gray-700">Colleges &amp; Departments</span>
         </div>
         <div className="flex items-center space-x-2.5">
-          <span className="w-3.5 h-3.5 rounded-full flex-shrink-0" style={{ backgroundColor: FACILITY_COLOR }} />
+          <img src={findIcon} style={{ width: '14px', height: '14px', filter: 'invert(75%) sepia(80%) saturate(600%) hue-rotate(5deg) brightness(105%)' }} alt="" />
           <span className="text-xs text-gray-700">Offices &amp; Facilities</span>
+        </div>
+        <div className="flex items-center space-x-2.5">
+          <span className="w-3 h-3 rounded-full flex-shrink-0 border-2 border-white shadow-sm" style={{ backgroundColor: COLLEGE_COLOR }} />
+          <span className="text-xs text-gray-700">Buildings &amp; Institutes</span>
+        </div>
+        <div className="flex items-center space-x-2.5">
+          <span className="w-3 h-3 rounded-full flex-shrink-0 border-2 border-white shadow-sm" style={{ backgroundColor: FACILITY_COLOR }} />
+          <span className="text-xs text-gray-700">Other Facilities</span>
+        </div>
+        <div className="flex items-center space-x-2.5">
+          <span className="w-3 h-3 rounded-full flex-shrink-0 border-2 border-white shadow-sm" style={{ backgroundColor: '#e03030' }} />
+          <span className="text-xs text-gray-700">Entrances &amp; Exits</span>
         </div>
       </div>
 
@@ -635,6 +803,7 @@ export default function MapView({ onClose, targetId = null }) {
             setBuildingMarker={setBuildingMarker}
             openBuilding={openBuilding}
           />
+          <MapZoomPanel onClose={onClose} />
         </MapContainer>
       </div>
 
@@ -833,68 +1002,73 @@ export default function MapView({ onClose, targetId = null }) {
         </div>
       )}
 
-      {/* ── Building Detail Modal ── */}
+      {/* ── Building Detail Modal — LANDSCAPE ── */}
       {selectedBuilding && (() => {
         const bldgColor = selectedBuilding.accentColor || COLLEGE_COLOR;
+        const currentFloorData = selectedBuilding.floors
+          ? selectedBuilding.floors[selectedFloor === 'floor1' ? 0 : 1]
+          : null;
+        const activeRoom = hoveredRoom && currentFloorData
+          ? currentFloorData.rooms.find(r => r.id === hoveredRoom) || null
+          : null;
+
         return (
         <div
-          onClick={closeBuilding}
           style={{
             position: 'absolute', inset: 0, zIndex: 300,
-            backdropFilter: buildingVisible ? 'blur(12px)' : 'blur(0px)',
-            WebkitBackdropFilter: buildingVisible ? 'blur(12px)' : 'blur(0px)',
-            background: buildingVisible ? 'rgba(0,0,0,0.40)' : 'rgba(0,0,0,0)',
+            backdropFilter: buildingVisible ? 'blur(14px)' : 'blur(0px)',
+            WebkitBackdropFilter: buildingVisible ? 'blur(14px)' : 'blur(0px)',
+            background: buildingVisible ? 'rgba(0,0,0,0.48)' : 'rgba(0,0,0,0)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'all 0.3s ease',
           }}
         >
+          {/* ── Card: landscape row layout ── */}
           <div
             onClick={e => e.stopPropagation()}
             style={{
               position: 'relative',
-              width: 'calc(100% - 48px)', maxWidth: '560px',
-              height: 'calc(100% - 80px)', maxHeight: '820px',
-              background: '#ebe8e1', borderRadius: '28px',
-              boxShadow: '0 32px 80px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.2)',
-              display: 'flex', flexDirection: 'column',
-              overflow: 'visible',
+              width: 'calc(100% - 48px)', maxWidth: '1240px',
+              height: 'calc(100% - 60px)', maxHeight: '680px',
+              borderRadius: '28px',
+              boxShadow: '0 40px 100px rgba(0,0,0,0.5), 0 8px 28px rgba(0,0,0,0.3)',
+              display: 'flex', flexDirection: 'row',
+              overflow: 'hidden',
               opacity: buildingVisible ? 1 : 0,
-              transform: buildingVisible ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(20px)',
-              transition: 'all 0.3s cubic-bezier(0.34, 1.3, 0.64, 1)',
+              transform: buildingVisible ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(22px)',
+              transition: 'all 0.32s cubic-bezier(0.34, 1.3, 0.64, 1)',
             }}
           >
-            {/* ── Protruding esc button ── */}
+            {/* ── ESC button — protrudes top-right of card ── */}
             <button
               onClick={() => { closeBuilding(); setTimeout(closeDetail, 350); }}
               style={{
                 position: 'absolute', top: '-20px', right: '-20px',
                 width: '56px', height: '56px', background: 'none', border: 'none',
-                cursor: 'pointer', padding: 0, zIndex: 100,
-                filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.4))',
+                cursor: 'pointer', padding: 0, zIndex: 500,
+                filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.45))',
               }}
             >
               <img src={escBtn} alt="Close" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </button>
 
-            {/* ── Top half: image / SVG floor plan viewer (40%) ── */}
+            {/* ════════════════════════════════════════
+                LEFT PANEL — 65% — floor plan / photo
+            ════════════════════════════════════════ */}
             <div style={{
-              flex: '0 0 40%', position: 'relative', overflow: 'hidden',
-              background: buildingTab === 'plan' ? bldgColor : '#1a1a1a',
+              flex: '0 0 65%',
+              position: 'relative',
+              background: buildingTab === 'plan' ? bldgColor : '#111',
               transition: 'background 0.3s ease',
-              borderRadius: '28px 28px 0 0',
-              display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-              paddingTop: '16px',
-              flexDirection: 'column',
+              borderRadius: '28px 0 0 28px',
+              overflow: 'hidden',
+              display: 'flex', flexDirection: 'column',
             }}>
-              {/* Floor selector — positioned just above the floor plan */}
+              {/* Floor selector — top-left, only in plan mode */}
               {selectedBuilding.floors && selectedBuilding.floors.length > 0 && buildingTab === 'plan' && (
                 <div style={{
-                  position: 'absolute', bottom: '54px', left: '50%', transform: 'translateX(-50%)',
-                  zIndex: 50,
-                  display: 'flex', gap: '12px',
-                  fontSize: '15px', fontFamily: "'Aventa', sans-serif",
-                  color: 'rgba(255,255,255,0.9)',
-                  letterSpacing: '0.04em',
+                  position: 'absolute', top: '22px', left: '28px', zIndex: 50,
+                  display: 'flex', gap: '24px',
                 }}>
                   {selectedBuilding.floors.map((floor, idx) => {
                     const floorKey = `floor${idx + 1}`;
@@ -902,21 +1076,17 @@ export default function MapView({ onClose, targetId = null }) {
                     return (
                       <button
                         key={floorKey}
-                        onClick={(e) => { e.stopPropagation(); setSelectedFloor(floorKey); }}
+                        onClick={e => { e.stopPropagation(); setSelectedFloor(floorKey); setHoveredRoom(null); }}
                         style={{
-                          background: 'none', border: 'none', cursor: 'pointer',
-                          color: isSelected ? '#fff' : 'rgba(255,255,255,0.6)',
+                          background: 'none', border: 'none', cursor: 'pointer', padding: '0 0 4px',
+                          color: isSelected ? '#fff' : 'rgba(255,255,255,0.45)',
                           fontWeight: isSelected ? 700 : 400,
-                          fontSize: '15px', fontFamily: "'Aventa', sans-serif",
-                          transition: 'all 0.25s ease',
-                          padding: 0,
+                          fontSize: '18px', fontFamily: "'Aventa', sans-serif",
                           letterSpacing: '0.04em',
+                          borderBottom: isSelected ? '2.5px solid #fff' : '2.5px solid transparent',
+                          transition: 'all 0.2s ease',
                         }}
-                        onMouseEnter={e => { if (!isSelected) e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; }}
-                        onMouseLeave={e => { if (!isSelected) e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
-                      >
-                        {floor.label}
-                      </button>
+                      >{floor.label}</button>
                     );
                   })}
                 </div>
@@ -931,19 +1101,18 @@ export default function MapView({ onClose, targetId = null }) {
                   objectFit: 'cover',
                   opacity: buildingTab === 'image' ? 1 : 0,
                   transition: 'opacity 0.3s ease',
-                  pointerEvents: buildingTab === 'image' ? 'auto' : 'none',
+                  pointerEvents: 'none',
                 }}
               />
 
-              {/* SVG Floor plan */}
+              {/* SVG floor plan */}
               <div style={{
                 position: 'absolute', inset: 0,
                 opacity: buildingTab === 'plan' ? 1 : 0,
                 transition: 'opacity 0.3s ease',
                 pointerEvents: buildingTab === 'plan' ? 'auto' : 'none',
-                display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-                width: '100%', height: '100%',
-                paddingBottom: '28px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '72px 24px 76px',
               }}>
                 {selectedBuilding.floors && selectedBuilding.floors.length > 0 ? (
                   selectedBuilding.planType === 'ybldg' && selectedFloor === 'floor1' ? (
@@ -954,172 +1123,153 @@ export default function MapView({ onClose, targetId = null }) {
                       accentColor={bldgColor}
                     />
                   ) : (
-                  <ICTFloorPlan
-                    floor={selectedBuilding.floors[selectedFloor === 'floor1' ? 0 : 1]}
-                    hoveredRoom={hoveredRoom}
-                    onRoomClick={id => setHoveredRoom(hoveredRoom === id ? null : id)}
-                    accentColor={bldgColor}
-                  />
+                    <ICTFloorPlan
+                      floor={selectedBuilding.floors[selectedFloor === 'floor1' ? 0 : 1]}
+                      hoveredRoom={hoveredRoom}
+                      onRoomClick={id => setHoveredRoom(hoveredRoom === id ? null : id)}
+                      accentColor={bldgColor}
+                    />
                   )
                 ) : (
-                  <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontFamily: "'Aventa', sans-serif" }}>
+                  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '15px', fontFamily: "'Aventa', sans-serif" }}>
                     No floor plan available
                   </p>
                 )}
               </div>
-            </div>
 
-            {/* ── Center toggle pill: Image / Plan ── */}
-            <div style={{
-              position: 'absolute', left: '50%', top: '40%', transform: 'translate(-50%, -50%)',
-              zIndex: 150,
-              display: 'flex',
-              background: 'rgba(0,0,0,0.85)', borderRadius: '999px',
-              border: '2px solid rgba(255,255,255,0.3)',
-              backdropFilter: 'blur(8px)',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-            }}>
-              {['plan', 'image'].map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => setBuildingTab(tab)}
-                  style={{
-                    padding: '12px 28px',
-                    fontSize: '13px',
-                    fontFamily: "'Aventa', sans-serif",
-                    fontWeight: buildingTab === tab ? 700 : 500,
-                    background: buildingTab === tab ? bldgColor : 'transparent',
-                    color: buildingTab === tab ? '#fff' : 'rgba(255,255,255,0.7)',
-                    border: 'none', cursor: 'pointer',
-                    transition: 'all 0.25s ease',
-                    letterSpacing: '0.08em',
-                    borderRadius: '999px',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  {tab === 'image' ? 'Image' : 'Floor Plan'}
-                </button>
-              ))}
-            </div>
-
-            {/* ── Bottom section (60%) ── */}
-            <div style={{
-              flex: '0 0 60%', display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'flex-start', overflow: 'hidden',
-              padding: '75px 28px 24px',
-              position: 'relative',
-            }}>
-
-              {/* { TAG }  Building Name — inline on one row */}
+              {/* Image / Floor Plan toggle — bottom-centre of left panel */}
               <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                gap: '10px', flexShrink: 0, width: '100%',
+                position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
+                zIndex: 50, display: 'flex',
+                background: 'rgba(0,0,0,0.78)', borderRadius: '999px',
+                border: '1.5px solid rgba(255,255,255,0.22)',
+                backdropFilter: 'blur(10px)',
+                boxShadow: '0 6px 20px rgba(0,0,0,0.35)',
+                overflow: 'hidden',
               }}>
+                {['plan', 'image'].map(tab => (
+                  <button
+                    key={tab}
+                    onClick={e => { e.stopPropagation(); setBuildingTab(tab); }}
+                    style={{
+                      padding: '11px 32px',
+                      fontSize: '13px', fontFamily: "'Aventa', sans-serif",
+                      fontWeight: buildingTab === tab ? 700 : 500,
+                      background: buildingTab === tab ? bldgColor : 'transparent',
+                      color: buildingTab === tab ? '#fff' : 'rgba(255,255,255,0.6)',
+                      border: 'none', cursor: 'pointer',
+                      borderRadius: '999px',
+                      letterSpacing: '0.09em', textTransform: 'uppercase',
+                      transition: 'all 0.22s ease', whiteSpace: 'nowrap',
+                    }}
+                  >{tab === 'image' ? 'Photo' : 'Floor Plan'}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* ════════════════════════════════════════
+                RIGHT PANEL — 35% — info
+            ════════════════════════════════════════ */}
+            <div style={{
+              flex: '0 0 35%',
+              background: '#ebe8e1',
+              borderRadius: '0 28px 28px 0',
+              display: 'flex', flexDirection: 'column',
+              padding: '34px 32px 26px',
+              overflow: 'hidden',
+            }}>
+
+              {/* Name + tag on the same row */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '10px',
+                flexWrap: 'wrap', marginBottom: '8px', flexShrink: 0,
+              }}>
+                <p style={{
+                  margin: 0, fontSize: '27px', fontWeight: 700,
+                  color: bldgColor, fontFamily: "'Aventa', sans-serif",
+                  letterSpacing: '-0.02em', lineHeight: 1.15,
+                }}>{selectedBuilding.name}</p>
                 {selectedBuilding.code && (
                   <div style={{
                     display: 'inline-flex', alignItems: 'center',
-                    background: `rgba(121,9,91,0.10)`,
-                    border: `1px solid rgba(121,9,91,0.22)`,
-                    borderRadius: '6px',
-                    padding: '3px 9px',
-                    flexShrink: 0,
+                    background: `${bldgColor}18`, border: `1.5px solid ${bldgColor}38`,
+                    borderRadius: '7px', padding: '4px 12px', flexShrink: 0,
                   }}>
                     <span style={{
-                      fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em',
-                      color: bldgColor, fontFamily: "'Aventa', sans-serif",
-                      textTransform: 'uppercase',
+                      fontSize: '12px', fontWeight: 700, letterSpacing: '0.13em',
+                      color: bldgColor, fontFamily: "'Aventa', sans-serif", textTransform: 'uppercase',
                     }}>{selectedBuilding.code}</span>
                   </div>
                 )}
-                <p style={{
-                  margin: 0, fontSize: '24px', fontWeight: 700,
-                  color: bldgColor, fontFamily: "'Aventa', sans-serif",
-                  letterSpacing: '-0.02em', lineHeight: 1.2,
-                }}>
-                  {selectedBuilding.name}
-                </p>
               </div>
 
-              {/* Open | Rooms | Wifi — Wifi in green */}
+              {/* Status row */}
               <div style={{
-                marginTop: '7px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                gap: '0', flexShrink: 0,
+                display: 'flex', alignItems: 'center', gap: '8px',
+                marginBottom: '4px', flexWrap: 'wrap', flexShrink: 0,
               }}>
-                <span style={{ fontSize: '13px', color: '#888', fontFamily: "'Aventa', sans-serif", letterSpacing: '0.04em' }}>
-                  Open&nbsp;&nbsp;|&nbsp;&nbsp;{selectedBuilding.rooms} Rooms&nbsp;&nbsp;|&nbsp;&nbsp;
+                <span style={{ fontSize: '14px', color: '#888', fontFamily: "'Aventa', sans-serif" }}>Open</span>
+                <span style={{ color: '#ccc', fontSize: '12px' }}>|</span>
+                <span style={{ fontSize: '14px', color: '#888', fontFamily: "'Aventa', sans-serif" }}>
+                  {selectedBuilding.rooms} {selectedBuilding.rooms === 1 ? 'Room' : 'Rooms'}
                 </span>
-                <span style={{ fontSize: '13px', color: '#27ae60', fontFamily: "'Aventa', sans-serif", letterSpacing: '0.04em', fontWeight: 600 }}>
-                  Wifi: Strong
-                </span>
+                <span style={{ color: '#ccc', fontSize: '12px' }}>|</span>
+                <span style={{ fontSize: '14px', color: '#27ae60', fontFamily: "'Aventa', sans-serif", fontWeight: 600 }}>WiFi: Strong</span>
               </div>
 
-              {/* Coordinates */}
+              {/* Coords */}
               {selectedBuilding.coords && (
                 <p style={{
-                  margin: '3px 0 0', fontSize: '11.5px', color: '#bbb',
-                  fontFamily: "'Aventa', sans-serif", textAlign: 'center',
-                  letterSpacing: '0.04em', flexShrink: 0,
+                  margin: '0 0 16px', fontSize: '11.5px', color: '#bbb',
+                  fontFamily: "'Aventa', sans-serif", letterSpacing: '0.04em', flexShrink: 0,
                 }}>
                   {selectedBuilding.coords[0].toFixed(6)}, {selectedBuilding.coords[1].toFixed(6)}
                 </p>
               )}
 
-              {/* Info box — fixed height, always visible */}
+              {/* Info box — fills remaining space, no divider above */}
               <div style={{
-                marginTop: '16px', width: '100%', flexShrink: 0,
+                flex: 1,
                 padding: '16px 18px',
-                background: 'rgba(126,18,91,0.04)',
-                borderRadius: '12px',
-                border: `1px solid rgba(126,18,91,0.13)`,
-                height: '190px',
-                display: 'flex', flexDirection: 'column',
+                background: `${bldgColor}08`,
+                borderRadius: '14px',
+                border: `1px solid ${bldgColor}1e`,
                 overflowY: 'auto',
+                display: 'flex', flexDirection: 'column',
               }}>
-                {hoveredRoom && selectedBuilding.floors ? (() => {
-                  const currentFloor = selectedBuilding.floors[selectedFloor === 'floor1' ? 0 : 1];
-                  const room = currentFloor?.rooms.find(r => r.id === hoveredRoom);
-                  if (!room) return (
-                    <p style={{
-                      margin: 'auto', fontSize: '13px', color: '#ccc',
-                      fontFamily: "'Aventa', sans-serif", fontStyle: 'italic', textAlign: 'center',
-                    }}>Select a room to view its details.</p>
-                  );
+                {activeRoom ? (() => {
+                  const room = activeRoom;
 
                   /* ── OFFICE view ── */
                   if (room.type === 'office') return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-                      {/* Office name */}
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <p style={{
-                        margin: '0 0 10px', fontSize: '14px', color: '#1a1a1a',
-                        fontFamily: "'Aventa', sans-serif", fontWeight: 700,
+                        margin: '0 0 14px', fontSize: '16px', color: '#1a1a1a',
+                        fontFamily: "'Aventa', sans-serif", fontWeight: 700, lineHeight: 1.3,
                       }}>{room.fullName}</p>
 
-                      {/* Director — inline */}
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '5px' }}>
-                        <span style={{ fontSize: '12px', color: '#aaa', fontFamily: "'Aventa', sans-serif", flexShrink: 0 }}>Director:</span>
-                        <span style={{ fontSize: '12px', color: '#2a2a2a', fontFamily: "'Aventa', sans-serif", fontWeight: 600 }}>
-                          {room.director}{room.position && <span style={{ fontWeight: 400, color: '#555' }}>, {room.position}</span>}
-                        </span>
-                      </div>
+                      {[
+                        { label: 'Director', value: room.director, sub: room.position },
+                        { label: 'Contact',  value: room.contact },
+                        { label: 'Email',    value: room.email },
+                      ].map(({ label, value, sub }) => value && (
+                        <div key={label} style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'flex-start' }}>
+                          <span style={{
+                            fontSize: '12px', color: '#aaa', fontFamily: "'Aventa', sans-serif",
+                            flexShrink: 0, minWidth: '64px', paddingTop: '1px',
+                          }}>{label}</span>
+                          <span style={{ fontSize: '14px', color: '#2a2a2a', fontFamily: "'Aventa', sans-serif", fontWeight: 600, lineHeight: 1.35 }}>
+                            {value}
+                            {sub && <span style={{ display: 'block', fontWeight: 400, color: '#666', fontSize: '13px' }}>{sub}</span>}
+                          </span>
+                        </div>
+                      ))}
 
-                      {/* Contact — inline */}
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '5px' }}>
-                        <span style={{ fontSize: '12px', color: '#aaa', fontFamily: "'Aventa', sans-serif", flexShrink: 0 }}>Contact No.:</span>
-                        <span style={{ fontSize: '12px', color: '#2a2a2a', fontFamily: "'Aventa', sans-serif", fontWeight: 500 }}>{room.contact}</span>
-                      </div>
-
-                      {/* Email — inline */}
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '10px' }}>
-                        <span style={{ fontSize: '12px', color: '#aaa', fontFamily: "'Aventa', sans-serif", flexShrink: 0 }}>Email:</span>
-                        <span style={{ fontSize: '12px', color: '#2a2a2a', fontFamily: "'Aventa', sans-serif", fontWeight: 500 }}>{room.email}</span>
-                      </div>
-
-                      {/* Description */}
                       {room.description && (
                         <p style={{
-                          margin: 0, fontSize: '11.5px', color: '#666', lineHeight: 1.6,
-                          fontFamily: "'Aventa', sans-serif", fontWeight: 400,
-                          borderTop: '1px solid rgba(121,9,91,0.1)', paddingTop: '8px',
+                          margin: '4px 0 0', fontSize: '13px', color: '#666', lineHeight: 1.65,
+                          fontFamily: "'Aventa', sans-serif",
+                          borderTop: `1px solid ${bldgColor}18`, paddingTop: '12px',
                         }}>{room.description}</p>
                       )}
                     </div>
@@ -1127,94 +1277,92 @@ export default function MapView({ onClose, targetId = null }) {
 
                   /* ── ROOM / schedule view ── */
                   return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0', height: '100%' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <p style={{
-                        margin: '0 0 2px', fontSize: '14px', color: bldgColor,
+                        margin: '0 0 4px', fontSize: '16px', color: bldgColor,
                         fontFamily: "'Aventa', sans-serif", fontWeight: 700,
                       }}>{room.fullName}</p>
                       <p style={{
-                        margin: '0 0 10px', fontSize: '11px', color: '#aaa',
-                        fontFamily: "'Aventa', sans-serif", fontWeight: 500,
-                        letterSpacing: '0.06em',
-                      }}>Schedule</p>
+                        margin: '0 0 14px', fontSize: '11px', color: '#aaa',
+                        fontFamily: "'Aventa', sans-serif", fontWeight: 600,
+                        letterSpacing: '0.09em', textTransform: 'uppercase',
+                      }}>Today's Schedule</p>
                       {room.schedule && room.schedule.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                           {room.schedule.map((item, idx) => (
                             <div key={idx} style={{
                               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                              fontSize: '12px', color: '#555', fontFamily: "'Aventa', sans-serif",
+                              padding: '10px 0',
+                              borderBottom: idx < room.schedule.length - 1 ? '1px solid rgba(0,0,0,0.07)' : 'none',
+                              fontFamily: "'Aventa', sans-serif",
                             }}>
-                              <span style={{ fontWeight: 600 }}>{item.code}</span>
-                              <span style={{ color: '#888', fontSize: '11.5px' }}>{item.time}</span>
+                              <span style={{ fontSize: '15px', fontWeight: 700, color: '#2a2a2a' }}>{item.code}</span>
+                              <span style={{ fontSize: '14px', color: '#888' }}>{item.time}</span>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <p style={{
-                          margin: 0, fontSize: '12px', color: '#bbb',
-                          fontFamily: "'Aventa', sans-serif", fontStyle: 'italic',
-                        }}>No schedule available.</p>
+                        <p style={{ margin: 0, fontSize: '14px', color: '#bbb', fontFamily: "'Aventa', sans-serif", fontStyle: 'italic' }}>
+                          No schedule available.
+                        </p>
                       )}
                     </div>
                   );
                 })() : (
-                  <p style={{
-                    margin: 'auto', fontSize: '13px', color: '#ccc',
-                    fontFamily: "'Aventa', sans-serif", fontStyle: 'italic', textAlign: 'center',
-                  }}>Select a room to view its details.</p>
+                  <div style={{ margin: 'auto', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={bldgColor} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.28">
+                      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                    <p style={{ fontSize: '14px', color: '#c0bbb5', fontFamily: "'Aventa', sans-serif", fontStyle: 'italic' }}>
+                      Select a room to view its details
+                    </p>
+                  </div>
                 )}
               </div>
 
-              {/* View on Map button */}
-              {selectedBuilding.coords && (
+              {/* Action buttons */}
+              <div style={{ flexShrink: 0, marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {selectedBuilding.coords && (
+                  <button
+                    onClick={() => viewOnMap(selectedBuilding)}
+                    style={{
+                      width: '100%', padding: '15px 0',
+                      background: bldgColor, border: 'none', borderRadius: '14px',
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '9px',
+                      color: '#fff', fontSize: '15px', fontWeight: 700,
+                      fontFamily: "'Aventa', sans-serif", letterSpacing: '0.07em',
+                      boxShadow: `0 6px 22px ${bldgColor}50`,
+                      transition: 'opacity 0.15s, transform 0.12s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.opacity = '0.88'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    VIEW ON MAP
+                  </button>
+                )}
                 <button
-                  onClick={() => viewOnMap(selectedBuilding)}
+                  onClick={closeBuilding}
                   style={{
-                    marginTop: '16px',
-                    width: '100%',
-                    padding: '13px 0',
-                    background: bldgColor,
-                    border: 'none',
-                    borderRadius: '14px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    color: '#fff',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    fontFamily: "'Aventa', sans-serif",
-                    letterSpacing: '0.06em',
-                    boxShadow: '0 4px 14px rgba(0,0,0,0.18)',
-                    transition: 'opacity 0.15s',
+                    width: '100%', padding: '13px 0',
+                    background: 'transparent', border: `1.5px solid ${bldgColor}40`,
+                    borderRadius: '14px', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    color: bldgColor, fontSize: '14px', fontWeight: 600,
+                    fontFamily: "'Aventa', sans-serif", letterSpacing: '0.07em',
+                    transition: 'background 0.15s',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
-                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                  onMouseEnter={e => e.currentTarget.style.background = `${bldgColor}10`}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                    <circle cx="12" cy="10" r="3"/>
-                  </svg>
-                  View on Map
+                  ‹ BACK
                 </button>
-              )}
+              </div>
             </div>
-
-            {/* Back arrow — bottom left */}
-            <button
-              onClick={closeBuilding}
-              style={{
-                position: 'absolute', bottom: '18px', left: '22px',
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: bldgColor, fontFamily: "'Aventa', sans-serif",
-                fontSize: '20px', fontWeight: 300, padding: '4px 8px',
-                zIndex: 50,
-              }}
-              onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-              onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}
-              title="Back to college"
-            >‹‹</button>
           </div>
         </div>
         );
@@ -1230,8 +1378,8 @@ function ICTFloorPlan({ floor, hoveredRoom, onRoomClick, accentColor }) {
   const ACCENT = accentColor || COLLEGE_COLOR;
 
   // Overall canvas
-  const W = 500;
-  const H = 200;
+  const W = 620;
+  const H = 220;
   const PAD = 14;
 
   // Room layout structure

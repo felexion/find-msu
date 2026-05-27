@@ -12,6 +12,7 @@ console.warn = (...args) => {
 // IMPORT ASSETS
 import logo from './images/find_styled.png';
 import regionPinIcon from './images/region-pin-alt.png';
+import gpsNavigationIcon from './images/gps-navigation.png';
 
 export default function App() {
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -224,7 +225,8 @@ export default function App() {
       }`}>
         
         {/* SHARED MAX-WIDTH BOUNDING BOX FOR PERFECT VERTICAL ALIGNMENT */}
-        <div className={`flex flex-col items-center w-full max-w-xl text-center transform transition-all duration-700 ease-in-out`}>
+        {/* SHARED MAX-WIDTH BOUNDING BOX FOR PERFECT VERTICAL ALIGNMENT */}
+        <div className={`flex flex-col items-center w-full max-w-xl text-center transform transition-all duration-700 ease-in-out pt-20`}>          
           
           {/* LOGO ELEMENT */}
           <img 
@@ -306,20 +308,38 @@ export default function App() {
               )}
             </div>
 
-            {/* 2. VIEW CAMPUS BUTTON */}
-            <button
-              className="group flex flex-col items-center space-y-2.5 focus:outline-none"
-              onClick={(e) => { e.stopPropagation(); openMap(); }}
-            >
-              <div className="w-40 aspect-square flex items-center justify-center bg-white/15 border border-white/10 hover:bg-white/20 active:scale-95 rounded-2xl transition duration-200 backdrop-blur-md shadow-lg p-8">
-                <img
-                  src={regionPinIcon}
-                  alt="View Campus"
-                  className="w-full h-full object-contain invert brightness-200 group-hover:scale-105 transition-transform"
-                />
-              </div>
-              <span className="text-sm font-light tracking-wide text-white/90">View Campus</span>
-            </button>
+            {/* 2 & 3. BUTTON ROW - VIEW CAMPUS & QUICK NAVIGATION */}
+            <div className="flex items-center justify-center gap-8">
+              {/* VIEW CAMPUS BUTTON */}
+              <button
+                className="group flex flex-col items-center space-y-2.5 focus:outline-none"
+                onClick={(e) => { e.stopPropagation(); openMap(); }}
+              >
+                <div className="w-40 aspect-square flex items-center justify-center bg-white/15 border border-white/10 hover:bg-white/20 active:scale-95 rounded-2xl transition duration-200 backdrop-blur-md shadow-lg p-8">
+                  <img
+                    src={regionPinIcon}
+                    alt="View Campus"
+                    className="w-full h-full object-contain invert brightness-200 group-hover:scale-105 transition-transform"
+                  />
+                </div>
+                <span className="text-sm font-light tracking-wide text-white/90">View Campus</span>
+              </button>
+
+              {/* QUICK NAVIGATION BUTTON */}
+              <button
+                className="group flex flex-col items-center space-y-2.5 focus:outline-none"
+                onClick={(e) => { e.stopPropagation(); }}
+              >
+                <div className="w-40 aspect-square flex items-center justify-center bg-white/15 border border-white/10 hover:bg-white/20 active:scale-95 rounded-2xl transition duration-200 backdrop-blur-md shadow-lg p-8">
+                  <img
+                    src={gpsNavigationIcon}
+                    alt="Quick Navigation"
+                    className="w-full h-full object-contain invert brightness-200 group-hover:scale-105 transition-transform"
+                  />
+                </div>
+                <span className="text-sm font-light tracking-wide text-white/90">Quick Navigation</span>
+              </button>
+            </div>
 
           </div>
         </div>
