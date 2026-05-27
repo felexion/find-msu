@@ -42,7 +42,7 @@ export default function App() {
     { id: 7,   name: 'College of Natural Sciences and Mathematics',      type: 'College'  },
     { id: 8,   name: 'Senior Highschool Department',                     type: 'College'  },
     { id: 101, name: 'Gymnasium',                                        type: 'Facility' },
-    { id: 102, name: "Registrar's Office (Y Building)",                  type: 'Facility' },
+    { id: 102, name: "Administration Building (Y Building)",             type: 'Facility' },
     { id: 103, name: 'Library',                                          type: 'Facility' },
     { id: 104, name: 'Office of Student Affairs',                        type: 'Facility' },
     { id: 105, name: 'Laktanan',                                         type: 'Facility' },
@@ -297,7 +297,6 @@ const generateDirections = (place) => {
         {/* SHARED MAX-WIDTH BOUNDING BOX FOR PERFECT VERTICAL ALIGNMENT */}
         {/* SHARED MAX-WIDTH BOUNDING BOX FOR PERFECT VERTICAL ALIGNMENT */}
         <div className={`flex flex-col items-center w-full max-w-xl text-center transform transition-all duration-700 ease-in-out pt-20`}>          
-          
           {/* LOGO ELEMENT */}
           <img 
             src={logo} 
