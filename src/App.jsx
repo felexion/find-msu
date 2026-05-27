@@ -3,533 +3,382 @@ import { ShaderGradientCanvas, ShaderGradient } from '@shadergradient/react';
 import MapView from './MapView';
 import QRCode from 'react-qr-code';
 
-// Suppress THREE.Clock deprecation warning from @shadergradient internals
+// LEAFLET
+import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Suppress THREE warnings
 const _origWarn = console.warn.bind(console);
 console.warn = (...args) => {
   if (typeof args[0] === 'string' && args[0].includes('THREE.Clock')) return;
   _origWarn(...args);
 };
 
-// IMPORT ASSETS
+// ASSETS
 import logo from './images/find_styled.png';
 import regionPinIcon from './images/region-pin-alt.png';
 import gpsNavigationIcon from './images/gps-navigation.png';
+
+const ORIGIN_COORDS = [6.069115927450321, 125.12674627794516];
+
+const DESTINATION_COORDS = {
+  1: [6.070480988321281, 125.12579094360856], 2: [6.064088002693254, 125.12683859876006],
+  3: [6.067896313435069, 125.12825013296172], 4: [6.0644563163346765, 125.13004240242738],
+  5: [6.06423760601592, 125.12834992857071], 6: [6.06774358929378, 125.12610972165167],
+  7: [6.069067815786466, 125.12589392474057], 8: [6.068557633415351, 125.12830040933797],
+  101: [6.06702148462265, 125.12394614511116], 102: [6.065520188853716, 125.12838202769997],
+  103: [6.066725955964607, 125.12799695772719], 104: [6.069841842030108, 124.12412084582711], // Fixed longitude typo if applicable
+  105: [6.066323469760834, 125.12839000321954], 106: [6.067222222222222, 125.12763888888888],
+};
+
+const ALL_ITEMS = [
+  { id: 1,   name: 'College of Agriculture',                        type: 'College'  },
+  { id: 2,   name: 'College of Engineering',                        type: 'College'  },
+  { id: 3,   name: 'College of Education',                             type: 'College'  },
+  { id: 4,   name: 'College of Fisheries and Aquatic Sciences',        type: 'College'  },
+  { id: 5,   name: 'College of Business Administration & Accountancy', type: 'College'  },
+  { id: 6,   name: 'College of Social Sciences and Humanities',        type: 'College'  },
+  { id: 7,   name: 'College of Natural Sciences and Mathematics',      type: 'College'  },
+  { id: 8,   name: 'Senior Highschool Department',                     type: 'College'  },
+  { id: 101, name: 'Gymnasium',                                         type: 'Facility' },
+  { id: 102, name: "Administration Building (Y Building)",             type: 'Facility' },
+  { id: 103, name: 'Library',                                          type: 'Facility' },
+  { id: 104, name: 'Office of Student Affairs',                        type: 'Facility' },
+  { id: 105, name: 'Laktanan',                                         type: 'Facility' },
+  { id: 106, name: 'VLS (Virtual Learning Studio)',                    type: 'Facility' },
+];
+
+const createNavPin = (color) => L.divIcon({
+  className: 'custom-nav-pin',
+  html: `<div style="background-color: ${color}; width: 22px; height: 22px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.4);"></div>`,
+  iconSize: [22, 22],
+  iconAnchor: [11, 11]
+});
+
+const QuickNavRouteMap = ({ origin, dest, routeCoords }) => {
+  const MapFixer = () => {
+    const map = useMap();
+    
+    useEffect(() => { 
+      setTimeout(() => map.invalidateSize(), 500); 
+    }, [map]);
+
+    useEffect(() => {
+      if (routeCoords && routeCoords.length > 0) {
+        map.fitBounds(L.latLngBounds(routeCoords), { padding: [80, 80] });
+      }
+    }, [routeCoords, map]);
+
+    return null;
+  };
+
+  const currentBounds = routeCoords.length > 0 ? routeCoords : [origin, dest];
+
+  return (
+    <MapContainer bounds={L.latLngBounds(currentBounds)} boundsOptions={{ padding: [80, 80] }} style={{ width: '100%', height: '100%' }} zoomControl={false}>
+      <MapFixer />
+      <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
+      <Marker position={origin} icon={createNavPin('#79095b')} />
+      <Marker position={dest} icon={createNavPin('#f0ad3e')} />
+      {routeCoords.length > 0 && (
+        <Polyline positions={routeCoords} color="#f0ad3e" weight={6} className="animate-route-line" />
+      )}
+    </MapContainer>
+  );
+};
 
 export default function App() {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [isBlurringOut, setIsBlurringOut] = useState(false);
+  
   const [showMap, setShowMap] = useState(false);
   const [mapVisible, setMapVisible] = useState(false);
+  const [showQuickNav, setShowQuickNav] = useState(false);
+  const [selectedQuickNav, setSelectedQuickNav] = useState(null);
+  
+  const [routeCoords, setRouteCoords] = useState([]);
+  const [directions, setDirections] = useState([]);
+
   const [currentTime, setCurrentTime] = useState('');
   const [currentDate, setCurrentDate] = useState('');
   const [homeSearch, setHomeSearch] = useState('');
   const [homeResults, setHomeResults] = useState([]);
-  const [mapTargetId, setMapTargetId] = useState(null);
-  const [showQuickNav, setShowQuickNav] = useState(false);
-  const [selectedQuickNav, setSelectedQuickNav] = useState(null);
-  const [directions, setDirections] = useState([]);
 
-  // All searchable items — kept in sync with MapView data
-  const ALL_ITEMS = [
-    { id: 1,   name: 'College of Agriculture',                           type: 'College'  },
-    { id: 2,   name: 'College of Engineering',                           type: 'College'  },
-    { id: 3,   name: 'College of Education',                             type: 'College'  },
-    { id: 4,   name: 'College of Fisheries and Aquatic Sciences',        type: 'College'  },
-    { id: 5,   name: 'College of Business Administration & Accountancy', type: 'College'  },
-    { id: 6,   name: 'College of Social Sciences and Humanities',        type: 'College'  },
-    { id: 7,   name: 'College of Natural Sciences and Mathematics',      type: 'College'  },
-    { id: 8,   name: 'Senior Highschool Department',                     type: 'College'  },
-    { id: 101, name: 'Gymnasium',                                        type: 'Facility' },
-    { id: 102, name: "Administration Building (Y Building)",             type: 'Facility' },
-    { id: 103, name: 'Library',                                          type: 'Facility' },
-    { id: 104, name: 'Office of Student Affairs',                        type: 'Facility' },
-    { id: 105, name: 'Laktanan',                                         type: 'Facility' },
-    { id: 106, name: 'VLS (Virtual Learning Studio)',                    type: 'Facility' },
-  ];
-
-  const COLLEGE_COLOR = '#79095b';
-  const FACILITY_COLOR = '#f0ad3e';
+  // LOADING LOGIC
   useEffect(() => {
     if (loadingProgress < 100) {
       const interval = setInterval(() => {
-        setLoadingProgress((prev) => {
-          const next = prev + Math.floor(Math.random() * 8) + 2;
-          return next >= 100 ? 100 : next;
-        });
-      }, 120);
+        setLoadingProgress((prev) => (prev >= 100 ? 100 : prev + Math.floor(Math.random() * 5) + 2));
+      }, 80);
       return () => clearInterval(interval);
     } else {
-      const timeout = setTimeout(() => setIsLoaded(true), 400);
-      return () => clearTimeout(timeout);
+      setTimeout(() => setIsLoaded(true), 500);
     }
   }, [loadingProgress]);
 
-  // Update time and date every second
   useEffect(() => {
-    const updateTimeAndDate = () => {
+    const update = () => {
       const now = new Date();
-      
-      // Format time (HH:MM AM/PM)
-      const hours = now.getHours();
-      const minutes = now.getMinutes().toString().padStart(2, '0');
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      const displayHours = hours % 12 || 12;
-      setCurrentTime(`${displayHours}:${minutes} ${ampm}`);
-      
-      // Format date (Mon, May 25 2026)
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const dayName = days[now.getDay()];
-      const monthName = months[now.getMonth()];
-      const date = now.getDate();
-      const year = now.getFullYear();
-      setCurrentDate(`${dayName}, ${monthName} ${date} ${year}`);
+      setCurrentTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      setCurrentDate(now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }));
     };
-    
-    updateTimeAndDate();
-    const interval = setInterval(updateTimeAndDate, 1000);
+    update();
+    const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
   }, []);
 
-  // Trigger map fade-in after it mounts
+  // Fetch true routing data with descending countdown distance logic
   useEffect(() => {
-    if (showMap) {
-      const timeout = setTimeout(() => setMapVisible(true), 50);
-      return () => clearTimeout(timeout);
-    } else {
-      setMapVisible(false);
-    }
-  }, [showMap]);
+    if (!selectedQuickNav) return;
+    const dest = DESTINATION_COORDS[selectedQuickNav.id];
 
-  useEffect(() => {
-    const handleQuickNavOpen = () => {
-      setShowQuickNav(true);
-    };
+    fetch(`https://router.project-osrm.org/route/v1/walking/${ORIGIN_COORDS[1]},${ORIGIN_COORDS[0]};${dest[1]},${dest[0]}?overview=full&geometries=geojson&steps=true`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.routes && data.routes[0]) {
+          const route = data.routes[0];
+          
+          // 1. Process coordinates for Leaflet map display
+          const coords = route.geometry.coordinates.map((c) => [c[1], c[0]]);
+          setRouteCoords(coords);
 
-    window.addEventListener('openQuickNav', handleQuickNavOpen);
+          // 2. Set up initial remaining distance accumulator
+          let runningRemainingDistance = route.legs[0].distance;
 
-    return () => {
-      window.removeEventListener('openQuickNav', handleQuickNavOpen);
-    };
-  }, []);
-  // Triggered when user clicks anywhere after loading completes
-  const handleScreenClick = () => {
-    if (isLoaded && !showDashboard) {
-      setShowDashboard(true);
-    }
-  };
+          // 3. Map steps and decrement total distance step-by-step
+          const stepsArray = route.legs[0].steps.map((step) => {
+            const roadName = step.name ? step.name : "Campus Walkway";
+            const type = step.maneuver.type;
+            const modifier = step.maneuver.modifier || "";
+            
+            let descriptiveText = `Follow the path along ${roadName}`;
 
-  // Handle opening map, optionally with a pre-targeted item
-  const openMap = (targetId = null) => {
-    setMapTargetId(targetId);
-    setIsBlurringOut(true);
-    setTimeout(() => setShowMap(true), 500);
-  };
+            if (type === 'depart') {
+              descriptiveText = `Start walking along ${roadName}`;
+            } else if (type === 'arrive') {
+              descriptiveText = `Arrive at your destination: ${selectedQuickNav.name}`;
+            } else if (type === 'turn') {
+              descriptiveText = `Turn ${modifier} onto ${roadName}`;
+            } else if (type === 'new name') {
+              descriptiveText = `Continue onto ${roadName}`;
+            }
+
+            descriptiveText = descriptiveText.replace(/\s+/g, ' ').trim();
+
+            // Calculate rounded value for this specific checkpoint step
+            const currentDistanceLabel = type === 'arrive' || runningRemainingDistance <= 5
+              ? "Arrived" 
+              : `${Math.round(runningRemainingDistance)}m left`;
+
+            // Subtract current step's distance for the next row item calculation
+            runningRemainingDistance -= step.distance;
+
+            return {
+              text: descriptiveText,
+              dist: currentDistanceLabel
+            };
+          });
+
+          setDirections(stepsArray);
+        } else {
+          setRouteCoords([ORIGIN_COORDS, dest]);
+          setDirections([{ text: `Walk directly towards ${selectedQuickNav.name}`, dist: "Proceed" }]);
+        }
+      })
+      .catch(() => {
+        setRouteCoords([ORIGIN_COORDS, dest]);
+        setDirections([{ text: `Head directly towards ${selectedQuickNav.name}`, dist: "Proceed" }]);
+      });
+  }, [selectedQuickNav]);
 
   const getGoogleMapsLink = (item) => {
-    const query = encodeURIComponent(`${item.name} MSU General Santos`);
-    return `https://www.google.com/maps/search/?api=1&query=${query}`;
-  };
-  const ORIGIN = {
-    name: 'ICT Complex',
-    coords: [6.069115927450321, 125.12674627794516],
-  };
-const DESTINATION_COORDS = {
-  1: [6.070480988321281, 125.12579094360856],
-  2: [6.064088002693254, 125.12683859876006],
-  3: [6.067896313435069, 125.12825013296172],
-  4: [6.0644563163346765, 125.13004240242738],
-  5: [6.06423760601592, 125.12834992857071],
-  6: [6.06774358929378, 125.12610972165167],
-  7: [6.069067815786466, 125.12589392474057],
-  8: [6.068557633415351, 125.12830040933797],
-  101: [6.06702148462265, 125.12394614511116],
-  102: [6.065520188853716, 125.12838202769997],
-  103: [6.066725955964607, 125.12799695772719],
-  104: [6.069841842030108, 125.12412084582711],
-  105: [6.066323469760834, 125.12839000321954],
-  106: [6.067222222222222, 125.12763888888888],
-};
-
-const generateDirections = (place) => {
-  const destination = DESTINATION_COORDS[place.id];
-
-  if (!destination) {
-    return ['Destination coordinates unavailable.'];
-  }
-
-  const [startLat, startLng] = ORIGIN.coords;
-  const [endLat, endLng] = destination;
-
-  const latDiff = endLat - startLat;
-  const lngDiff = endLng - startLng;
-
-  const northSouth =
-    latDiff > 0 ? 'north' : 'south';
-
-  const eastWest =
-    lngDiff > 0 ? 'east' : 'west';
-
-  const verticalDistance = Math.abs(latDiff * 111000);
-  const horizontalDistance = Math.abs(lngDiff * 111000);
-
-  return [
-    `Start at ${ORIGIN.name}.`,
-    `Proceed ${northSouth} for approximately ${Math.round(verticalDistance)} meters.`,
-    `Then continue ${eastWest} for approximately ${Math.round(horizontalDistance)} meters.`,
-    `You will arrive at ${place.name}.`,
-  ];
-};
-
-  // Handle closing map
-  const closeMap = () => {
-    setShowMap(false);
-    setMapTargetId(null);
-    setTimeout(() => setIsBlurringOut(false), 300);
-  };
-
-  // Homepage search handlers
-  const handleHomeSearch = (e) => {
-    const q = e.target.value;
-    setHomeSearch(q);
-    if (!q.trim()) { setHomeResults([]); return; }
-    const lower = q.toLowerCase();
-    setHomeResults(ALL_ITEMS.filter(i => i.name.toLowerCase().includes(lower)));
-  };
-
-  const handleHomeResultClick = (item) => {
-    setHomeSearch('');
-    setHomeResults([]);
-    openMap(item.id);
+    if (!item || !DESTINATION_COORDS[item.id]) return '';
+    const dest = DESTINATION_COORDS[item.id];
+    return `https://maps.google.com/?saddr=${ORIGIN_COORDS[0]},${ORIGIN_COORDS[1]}&daddr=${dest[0]},${dest[1]}&dirflg=w`;
   };
 
   return (
-    <div 
-      onClick={handleScreenClick}
-      className={`relative w-screen h-screen overflow-hidden text-white ${
-        isLoaded && !showDashboard ? 'cursor-pointer' : 'cursor-default'
-      }`}
-      style={{ fontFamily: "'Aventa', sans-serif" }}
-    >
-      
-      {/* TOP LEFT: WiFi Icon and Time */}
-      <div className="absolute top-6 left-6 z-20 flex items-center gap-3">
-        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/>
-        </svg>
-        <span className="text-sm font-light tracking-wide text-white">{currentTime}</span>
-      </div>
+    <>
+      <style>{`
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes routeMarch { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }
+        .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+        .animate-slide-in-right { animation: slideInRight 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+        .animate-route-line { stroke-dasharray: 12; animation: routeMarch 1s linear infinite; stroke-linecap: round; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+      `}</style>
 
-      {/* TOP RIGHT: Current Date */}
-      <div className="absolute top-6 right-6 z-20">
-        <p className="text-sm font-light tracking-wide text-white text-right">{currentDate}</p>
-      </div>
-
-      {/* FOOTER: Copyright and Credits */}
-      <div className="absolute bottom-6 left-0 right-0 z-20 text-center">
-        <p className="text-xs font-light tracking-wide text-white/50">© 2026 FIND-MSU All Rights Reserved</p>
-        <p className="text-xs font-light tracking-wide text-white/50">MSU-General Santos</p>
-      </div>
-      
-      {/* 3D ANIMATED GRADIENT BACKGROUND */}
-      <div className="absolute inset-0 z-0 pointer-events-none w-full h-full">
-        <ShaderGradientCanvas style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
-          <ShaderGradient
-            animate="on"
-            axesHelper="off"
-            brightness={1.2}
-            cAzimuthAngle={180}
-            cDistance={3.6}
-            cPolarAngle={90}
-            cameraZoom={1}
-            color1="#7e125b"
-            color2="#eeaa3b"
-            color3="#a75f8b"
-            destination="onCanvas"
-            embedMode="off"
-            envPreset="city"
-            format="gif"
-            fov={45}
-            frameRate={10}
-            gizmoHelper="hide"
-            grain="off"
-            lightType="3d"
-            pixelDensity={1}
-            positionX={-1.4}
-            positionY={0}
-            positionZ={0}
-            range="disabled"
-            rangeEnd={40}
-            rangeStart={0}
-            reflection={0.1}
-            rotationX={0}
-            rotationY={10}
-            rotationZ={50}
-            shader="defaults"
-            type="plane"
-            uAmplitude={1}
-            uDensity={1.3}
-            uFrequency={5.5}
-            uSpeed={0.4}
-            uStrength={4}
-            uTime={0}
-            wireframe={false}
-          />
-        </ShaderGradientCanvas>
-      </div>
-
-      {/* MAP VIEW OVERLAY */}
-      {showMap && (
-        <div className={`absolute inset-0 z-50 transition-all duration-700 ${
-          mapVisible ? 'opacity-100' : 'opacity-0'
-        }`}>
-          <MapView onClose={closeMap} targetId={mapTargetId} />
-        </div>
-      )}
-
-      {/* CENTRAL BASE CONTENT INTERFACE LAYER */}
-      <div className={`relative z-10 w-full h-full flex flex-col items-center justify-center p-8 bg-black/15 backdrop-blur-xs transition-all duration-500 ${
-        isBlurringOut ? 'blur-xl opacity-0 pointer-events-none' : 'blur-none opacity-100'
-      }`}>
+      <div 
+        onClick={() => isLoaded && !showDashboard && setShowDashboard(true)} 
+        className="relative w-screen h-screen overflow-hidden text-white bg-black cursor-pointer"
+      >
         
-        {/* SHARED MAX-WIDTH BOUNDING BOX FOR PERFECT VERTICAL ALIGNMENT */}
-        {/* SHARED MAX-WIDTH BOUNDING BOX FOR PERFECT VERTICAL ALIGNMENT */}
-        <div className={`flex flex-col items-center w-full max-w-xl text-center transform transition-all duration-700 ease-in-out pt-20`}>          
-          {/* LOGO ELEMENT */}
-          <img 
-            src={logo} 
-            alt="Find Logo" 
-            className={`w-96 md:w-[28rem] h-auto object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.4)] transition-all duration-1000 ease-out ${
-              showDashboard 
-                ? '-translate-y-24 mb-0' 
-                : 'translate-y-0 mb-6'
-            }`}
-          />
+        {/* BACKGROUND SHADER */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <ShaderGradientCanvas style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
+            <ShaderGradient
+              animate="on" brightness={1.1} color1="#7e125b" color2="#eeaa3b" color3="#a75f8b"
+              frameRate={60} grain="off" pixelDensity={2} rotationZ={50} uAmplitude={1} uDensity={1.2} 
+              uFrequency={5.5} uSpeed={0.3} uStrength={4} type="plane"
+            />
+          </ShaderGradientCanvas>
+        </div>
 
-          {/* PHASE 1 & 2: LOADING BAR OR PULSING "CLICK TO CONTINUE" */}
+        {/* MAIN CENTERED UI */}
+        <div className={`relative z-10 w-full h-full flex flex-col items-center justify-center p-8 transition-all duration-1000 ${isBlurringOut ? 'blur-3xl opacity-0 scale-90' : 'opacity-100 scale-100'}`}>
+          
+          <img src={logo} alt="Find Logo" className={`w-96 md:w-[28rem] h-auto transition-all duration-1000 ${showDashboard ? 'mb-12' : 'mb-8'}`} />
+
+          {/* LOADING STATE */}
           {!showDashboard && (
-            <div className="w-full transition-opacity duration-300">
+            <div className="flex flex-col items-center w-full max-w-xs">
               {!isLoaded ? (
-                /* LOADING VIEW */
-                <div className="w-64 flex flex-col items-center space-y-2 mx-auto">
-                  <div className="w-full h-[4px] bg-white/15 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-amber-400 to-white rounded-full kiosk-pulse transition-all duration-200 ease-out"
-                      style={{ width: `${loadingProgress}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] font-light tracking-widest text-white/40">
-                    {loadingProgress}%
-                  </span>
+                <div className="w-full flex flex-col items-center">
+                   <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden mb-4 shadow-inner">
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#f0ad3e] to-white transition-all duration-300 ease-out" 
+                        style={{ width: `${loadingProgress}%` }} 
+                      />
+                   </div>
+                   <span className="text-[10px] font-black tracking-[0.4em] uppercase text-[#f0ad3e]">{loadingProgress}%</span>
                 </div>
               ) : (
-                /* CLICK ANYWHERE CALL TO ACTION */
-                <div className="kiosk-pulse py-1">
-                  <p className="text-base font-light tracking-[0.2em] text-amber-400 uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                    Click Anywhere to Continue
-                  </p>
-                </div>
+                <p className="animate-pulse text-xs font-black tracking-[0.3em] uppercase text-white/60">Click Anywhere to Start</p>
               )}
             </div>
           )}
 
-          {/* PHASE 3: THE DASHBOARD HUB */}
-          <div className={`w-full flex flex-col items-center space-y-6 -mt-20 transition-all duration-700 delay-100 ${
-            showDashboard 
-              ? 'opacity-100 translate-y-0 pointer-events-auto' 
-              : 'opacity-0 translate-y-10 pointer-events-none absolute'
-          }`}>
-            
-            {/* 1. CAMPUS SEARCH BAR */}
-            <div className="relative w-full shadow-2xl" onClick={e => e.stopPropagation()}>
-              <span className="absolute inset-y-0 left-5 flex items-center pointer-events-none z-10">
-                <svg className="w-5 h-5 text-purple-900/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </span>
-              <input
-                type="text"
-                placeholder="Search the Campus..."
-                value={homeSearch}
-                onChange={handleHomeSearch}
-                className="w-full py-4 pl-14 pr-6 bg-white text-purple-950 font-light placeholder-purple-900/60 rounded-full text-lg focus:outline-none shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)]"
-              />
-              {/* Results dropdown */}
-              {homeResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl overflow-hidden z-[60] border border-gray-100">
-                  {homeResults.map(item => (
-                    <button
-                      key={item.id}
-                      onClick={() => handleHomeResultClick(item)}
-                      className="w-full px-6 py-3.5 text-left hover:bg-purple-50 active:bg-purple-100 transition-colors duration-150 border-b border-gray-100 last:border-b-0 focus:outline-none flex items-center gap-3"
-                    >
-                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: item.type === 'Facility' ? FACILITY_COLOR : COLLEGE_COLOR }} />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 leading-tight">{item.name}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">{item.type}</p>
-                      </div>
+          {/* DASHBOARD SEARCH & BUTTONS */}
+          {showDashboard && (
+            <div className="w-full max-w-xl flex flex-col items-center space-y-12 animate-fade-in-up">
+              <div className="relative w-full">
+                <input
+                  type="text" placeholder="Search buildings, colleges..." value={homeSearch} 
+                  onChange={(e) => {
+                    setHomeSearch(e.target.value);
+                    setHomeResults(e.target.value.trim() ? ALL_ITEMS.filter(i => i.name.toLowerCase().includes(e.target.value.toLowerCase())) : []);
+                  }}
+                  className="w-full py-5 px-12 bg-white text-purple-950 font-bold rounded-full text-lg shadow-2xl focus:outline-none"
+                />
+                {homeResults.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-3 bg-white rounded-3xl shadow-2xl overflow-hidden z-[60] text-black">
+                    {homeResults.map(item => (
+                      <button key={item.id} onClick={() => { setSelectedQuickNav(item); setIsBlurringOut(true); setTimeout(() => { setShowMap(true); setMapVisible(true); }, 500); }} 
+                        className="w-full px-8 py-4 text-left hover:bg-purple-50 border-b border-gray-100 flex items-center gap-3">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.type === 'Facility' ? '#f0ad3e' : '#79095b' }} />
+                        <p className="font-bold">{item.name}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-10">
+                <button onClick={() => { setIsBlurringOut(true); setTimeout(() => { setShowMap(true); setMapVisible(true); }, 500); }} className="flex flex-col items-center gap-4 group">
+                  <div className="w-36 aspect-square bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-9 group-hover:bg-white/20 transition-all active:scale-90">
+                    <img src={regionPinIcon} className="w-full h-full object-contain invert" alt="Map" />
+                  </div>
+                  <span className="text-[10px] font-black tracking-widest uppercase opacity-50">View Campus</span>
+                </button>
+                <button onClick={() => setShowQuickNav(true)} className="flex flex-col items-center gap-4 group">
+                  <div className="w-36 aspect-square bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-9 group-hover:bg-white/20 transition-all active:scale-90">
+                    <img src={gpsNavigationIcon} className="w-full h-full object-contain invert" alt="Nav" />
+                  </div>
+                  <span className="text-[10px] font-black tracking-widest uppercase opacity-50">Quick Navigation</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* FULL MAP MODAL */}
+        {showMap && (
+          <div className={`fixed inset-0 z-[100] bg-white transition-opacity duration-700 ${mapVisible ? 'opacity-100' : 'opacity-0'}`}>
+            <MapView onClose={() => { setShowMap(false); setMapVisible(false); setIsBlurringOut(false); setSelectedQuickNav(null); }} />
+          </div>
+        )}
+
+        {/* QUICK NAVIGATION MODAL */}
+        {showQuickNav && (
+          <div className="fixed inset-0 z-[200] bg-[#79095b] flex animate-fade-in-up">
+            {!selectedQuickNav ? (
+              <div className="w-full p-16 overflow-y-auto">
+                <div className="flex justify-between items-end mb-16">
+                  <h1 className="text-5xl font-black italic uppercase tracking-tighter leading-none">Select your destination</h1>
+                  <button onClick={() => setShowQuickNav(false)} className="bg-white/10 px-8 py-3 rounded-full font-bold uppercase text-[10px]">Back</button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {ALL_ITEMS.map((item) => (
+                    <button key={item.id} onClick={() => setSelectedQuickNav(item)} 
+                      className="bg-white/5 border border-white/10 rounded-[2rem] p-8 text-left hover:bg-white/10 transition-all">
+                      <span className="text-[9px] font-black text-[#f0ad3e] uppercase mb-1 block tracking-widest">{item.type}</span>
+                      <h3 className="text-xl font-bold">{item.name}</h3>
                     </button>
                   ))}
                 </div>
-              )}
-            </div>
-
-            {/* 2 & 3. BUTTON ROW - VIEW CAMPUS & QUICK NAVIGATION */}
-            <div className="flex items-center justify-center gap-8">
-              {/* VIEW CAMPUS BUTTON */}
-              <button
-                className="group flex flex-col items-center space-y-2.5 focus:outline-none"
-                onClick={(e) => { e.stopPropagation(); openMap(); }}
-              >
-                <div className="w-40 aspect-square flex items-center justify-center bg-white/15 border border-white/10 hover:bg-white/20 active:scale-95 rounded-2xl transition duration-200 backdrop-blur-md shadow-lg p-8">
-                  <img
-                    src={regionPinIcon}
-                    alt="View Campus"
-                    className="w-full h-full object-contain invert brightness-200 group-hover:scale-105 transition-transform"
-                  />
+              </div>
+            ) : (
+              <div className="w-full flex h-full">
+                {/* MAP AREA */}
+                <div className="flex-1 relative bg-[#e5e7eb]">
+                  <button onClick={() => { setSelectedQuickNav(null); setRouteCoords([]); setDirections([]); }} className="absolute top-10 left-10 z-[1000] bg-[#79095b] px-6 py-3 rounded-xl font-black uppercase text-[10px]">Change Destination</button>
+                  <QuickNavRouteMap origin={ORIGIN_COORDS} dest={DESTINATION_COORDS[selectedQuickNav.id]} routeCoords={routeCoords} />
                 </div>
-                <span className="text-sm font-light tracking-wide text-white/90">View Campus</span>
-              </button>
 
-              {/* QUICK NAVIGATION BUTTON */}
-              <button
-                className="group flex flex-col items-center space-y-2.5 focus:outline-none"
-                onClick={(e) => { e.stopPropagation(); setShowQuickNav(true); }}
-              >
-                <div className="w-40 aspect-square flex items-center justify-center bg-white/15 border border-white/10 hover:bg-white/20 active:scale-95 rounded-2xl transition duration-200 backdrop-blur-md shadow-lg p-8">
-                  <img
-                    src={gpsNavigationIcon}
-                    alt="Quick Navigation"
-                    className="w-full h-full object-contain invert brightness-200 group-hover:scale-105 transition-transform"
-                  />
-                </div>
-                <span className="text-sm font-light tracking-wide text-white/90">Quick Navigation</span>
-              </button>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      {/* QUICK NAVIGATION MODAL */}
-      {showQuickNav && (
-        <div className="fixed inset-0 z-[99999] bg-black/90 backdrop-blur-md flex">
-
-          {/* LEFT SIDE */}
-          <div className="w-[40%] bg-[#121212] border-r border-white/10 overflow-y-auto p-6">
-
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-3xl font-semibold text-white">
-                Quick Navigation
-              </h1>
-
-              <button
-                onClick={() => setShowQuickNav(false)}
-                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition"
-              >
-                Close
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              {ALL_ITEMS.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    setSelectedQuickNav(item);
-                    setDirections(generateDirections(item));
-                  }}
-                  className={`w-full text-left p-4 rounded-2xl border transition ${
-                    selectedQuickNav?.id === item.id
-                      ? 'bg-[#79095b] border-[#79095b]'
-                      : 'bg-white/5 border-white/10 hover:bg-white/10'
-                  }`}
-                >
-                  <p className="text-white font-medium">
-                    {item.name}
-                  </p>
-
-                  <p className="text-white/60 text-sm mt-1">
-                    {item.type}
-                  </p>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* RIGHT SIDE */}
-          <div className="flex-1 flex overflow-hidden">
-
-            {/* DIRECTIONS PANEL */}
-            <div className="flex-1 bg-[#181818] p-8 overflow-y-auto border-r border-white/10">
-
-              {!selectedQuickNav ? (
-                <div className="text-white/50 text-2xl h-full flex items-center justify-center">
-                  Select a destination to begin navigation.
-                </div>
-              ) : (
-                <>
-                  <h1 className="text-4xl font-semibold text-white mb-2">
-                    {selectedQuickNav.name}
-                  </h1>
-
-                  <p className="text-white/50 mb-10">
-                    Navigation Instructions
-                  </p>
-
-                  <div className="flex flex-col gap-4">
-                    {directions.map((step, index) => (
-                      <div
-                        key={index}
-                        className="bg-white/5 border border-white/10 rounded-2xl p-5"
-                      >
-                        <p className="text-sm text-white/40 mb-1">
-                          STEP {index + 1}
-                        </p>
-
-                        <p className="text-white text-lg">
-                          {step}
-                        </p>
+                {/* DIRECTIONS PANEL */}
+                <div className="w-[480px] bg-[#79095b] flex flex-col p-12 border-l border-white/5 animate-slide-in-right">
+                  <p className="text-[#f0ad3e] text-[10px] font-black uppercase mb-3 tracking-[0.2em]">Heading To</p>
+                  <h2 className="text-4xl font-black uppercase italic mb-10 leading-tight">{selectedQuickNav.name}</h2>
+                  
+                  <div className="flex-1 overflow-y-auto custom-scrollbar pr-4 space-y-5">
+                    {directions.map((step, idx) => (
+                      <div key={idx} className="bg-[#79095b] p-6 rounded-[2rem] flex items-center gap-6 border border-white/5">
+                        <div className="w-12 h-12 rounded-full bg-[#f0ad3e] text-black flex items-center justify-center font-black text-lg flex-shrink-0">
+                          {idx + 1}
+                        </div>
+                        <div>
+                          <p className="text-white text-lg font-bold leading-snug">{step.text}</p>
+                          <p className="text-[#f0ad3e] text-sm font-black mt-1 uppercase tracking-wider">{step.dist}</p>
+                        </div>
                       </div>
                     ))}
+
+                    <div className="mt-10 pt-10 border-t border-white/10 flex flex-col items-center">
+                        <div className="bg-white p-6 rounded-[3rem] shadow-2xl mb-8">
+                          <QRCode value={getGoogleMapsLink(selectedQuickNav)} size={180} />
+                        </div>
+                        <p className="text-[11px] text-white/30 text-center mb-10 uppercase font-black tracking-widest px-8 leading-relaxed">
+                            Scan to continue navigation on your mobile phone
+                        </p>
+                        <a href={getGoogleMapsLink(selectedQuickNav)} target="_blank" rel="noreferrer" 
+                           className="w-full bg-[#f0ad3e] text-black py-6 rounded-3xl font-black text-center text-sm uppercase tracking-widest hover:bg-white transition flex items-center justify-center gap-3">
+                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                           Start Navigation
+                        </a>
+                        <button onClick={() => { setShowQuickNav(false); setSelectedQuickNav(null); setRouteCoords([]); setDirections([]); }} className="mt-8 text-white/20 text-[10px] font-black uppercase tracking-widest hover:text-white transition">Exit Navigation</button>
+                    </div>
                   </div>
-                </>
-              )}
-            </div>
-
-            {/* QR PANEL */}
-            <div className="w-[350px] flex flex-col items-center justify-center p-8 text-center bg-[#101010]">
-
-              {selectedQuickNav && (
-                <>
-                  <div className="bg-white p-5 rounded-3xl mb-6">
-                    <QRCode
-                      value={getGoogleMapsLink(selectedQuickNav)}
-                      size={220}
-                    />
-                  </div>
-
-                  <a
-                    href={getGoogleMapsLink(selectedQuickNav)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="bg-[#79095b] hover:opacity-90 transition text-white px-6 py-4 rounded-2xl text-lg font-medium"
-                  >
-                    Open in Google Maps
-                  </a>
-
-                  <p className="text-white/50 mt-6 text-sm leading-relaxed">
-                    Scan using your mobile phone to continue navigation in Google Maps.
-                  </p>
-                </>
-              )}
-            </div>
+                </div>
+              </div>
+            )}
           </div>
+        )}
+
+        {/* TOP BAR HUD */}
+        <div className="absolute top-8 left-8 z-20 flex items-center gap-3 opacity-40">
+          <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+          <span className="text-[10px] font-black tracking-widest uppercase">{currentTime}</span>
         </div>
-      )}
-    </div>
+        <div className="absolute top-8 right-8 z-20 opacity-40">
+          <span className="text-[10px] font-black tracking-widest uppercase">{currentDate}</span>
+        </div>
+
+      </div>
+    </>
   );
 }

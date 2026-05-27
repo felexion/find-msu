@@ -330,7 +330,7 @@ function injectGlowStyle() {
 }
 
 // ── Inner component: has access to the Leaflet map instance ──────────────────
-function MapZoomPanel({ onClose }) {
+function MapZoomPanel({ onClose, sidebarOpen, onOpenSidebar }) {
   const map = useMap();
   const BTN = {
     width: '48px', height: '48px', borderRadius: '12px',
@@ -413,16 +413,45 @@ function MapZoomPanel({ onClose }) {
   );
 }
 
-function MapInner({
-  markerRefs,
-  glowId,
-  openDetail,
-  buildingMarker,
-  setBuildingMarker,
-  openBuilding,
-}) {
+function MapInner({ markerRefs, glowId, openDetail, buildingMarker, setBuildingMarker, openBuilding }) {
   const map = useMap();
   const buildingMarkerRef = useRef(null);
+
+  useEffect(() => {
+    if (!map) return;
+
+    // 1. Force an immediate recalculation
+    map.invalidateSize();
+
+    // 2. Watch the container for any size changes
+    const resizeObserver = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+
+    const container = map.getContainer();
+    resizeObserver.observe(container);
+
+    // 3. Backup: Trigger every 250ms for the first 2 seconds 
+    // (This covers the "gray screen poof" window)
+    const backupInterval = setInterval(() => {
+      map.invalidateSize();
+    }, 250);
+
+    setTimeout(() => clearInterval(backupInterval), 2000);
+
+    return () => {
+      resizeObserver.disconnect();
+      clearInterval(backupInterval);
+    };
+  }, [map]);
+
+  // Keep your existing bounds logic below
+  useEffect(() => {
+    map.setMaxBounds(CAMPUS_BOUNDS);
+    map.on('drag', () => map.panInsideBounds(CAMPUS_BOUNDS, { animate: false }));
+  }, [map]);
+
+  // ... (rest of your MapInner code remains exactly the same)
 
   useEffect(() => {
     map.setMaxBounds(CAMPUS_BOUNDS);
@@ -912,18 +941,26 @@ export default function MapView({ onClose, targetId, onOpenQuickNav }) {
             style={{ width: '100%', height: '100%' }}
             zoomControl={false}
           >
-            <MapInner
-              markerRefs={markerRefs}
-              glowId={glowId}
-              openDetail={openDetail}
-              zoomPortalRef={zoomPortalRef}
-              buildingMarker={buildingMarker}
-              setBuildingMarker={setBuildingMarker}
-              openBuilding={openBuilding}
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <MapInner
+            markerRefs={markerRefs}
+            glowId={glowId}
+            openDetail={openDetail}
+            zoomPortalRef={zoomPortalRef}
+            buildingMarker={buildingMarker}
+            setBuildingMarker={setBuildingMarker}
+            openBuilding={openBuilding}
             />
-            <MapZoomPanel onClose={onClose} />
-          </MapContainer>
-        </div>
+          <MapZoomPanel 
+            onClose={onClose} 
+            sidebarOpen={sidebarOpen} 
+            onOpenSidebar={() => setSidebarOpen(true)} 
+          />
+  </MapContainer>
+</div>
 
       </div> 
 
