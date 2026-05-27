@@ -35,8 +35,9 @@ export default function App() {
     { id: 4,   name: 'College of Fisheries and Aquatic Sciences',        type: 'College'  },
     { id: 5,   name: 'College of Business Administration & Accountancy', type: 'College'  },
     { id: 6,   name: 'College of Social Sciences and Humanities',        type: 'College'  },
-    { id: 7,   name: 'College of Natural Sciences and Mathematics',      type: 'College'  },
-    { id: 8,   name: 'Senior Highschool Department',                     type: 'College'  },
+    { id: 7,   name: 'IT/Physics Department',                            type: 'Facility' },
+    { id: 8,   name: 'College of Natural Sciences and Mathematics',      type: 'College'  },
+    { id: 9,   name: 'Senior Highschool Department',                     type: 'College'  },
     { id: 101, name: 'Gymnasium',                                        type: 'Facility' },
     { id: 102, name: "Registrar's Office (Y Building)",                  type: 'Facility' },
     { id: 103, name: 'Library',                                          type: 'Facility' },
@@ -227,7 +228,6 @@ export default function App() {
         {/* SHARED MAX-WIDTH BOUNDING BOX FOR PERFECT VERTICAL ALIGNMENT */}
         {/* SHARED MAX-WIDTH BOUNDING BOX FOR PERFECT VERTICAL ALIGNMENT */}
         <div className={`flex flex-col items-center w-full max-w-xl text-center transform transition-all duration-700 ease-in-out pt-20`}>          
-          
           {/* LOGO ELEMENT */}
           <img 
             src={logo} 
