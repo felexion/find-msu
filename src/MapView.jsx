@@ -222,8 +222,8 @@ const EXTRA_FACILITIES = [
 ];
 
 const GATES = [
-  { id: 311, name: 'Main Gate',  coords: [6.0657072972022075, 125.13180336952652], status: 'Open', type: 'Entrance/Exit' },
-  { id: 312, name: 'Back Gate',  coords: [6.065494286706529,  125.12212504400082], status: 'Open', type: 'Entrance/Exit' },
+  { id: 311, name: 'Main Gate',  coords: [6.065607011506395, 125.13138734342843], status: 'Open', type: 'Entrance/Exit' },
+  { id: 312, name: 'Back Gate',  coords: [6.065490489416797, 125.12240208145967], status: 'Open', type: 'Entrance/Exit' },
 ];
 
 const ALL_ITEMS = [
@@ -259,7 +259,7 @@ function injectGlowStyle() {
 
 // ── Inner component: has access to the Leaflet map instance ──────────────────
 // ── Right-side floating control panel (inside MapContainer so useMap works) ──
-function MapZoomPanel({ onClose }) {
+function MapZoomPanel({ onClose, onOpenSidebar, sidebarOpen }) {
   const map = useMap();
   const BTN = {
     width: '48px', height: '48px', borderRadius: '12px',
@@ -283,6 +283,9 @@ function MapZoomPanel({ onClose }) {
   return (
     <div style={{
       position: 'absolute', right: '20px', bottom: '24px',
+      opacity: sidebarOpen ? 0 : 1,
+      pointerEvents: sidebarOpen ? 'none' : 'auto',
+      transition: 'opacity 0.25s ease',
       zIndex: 600, display: 'flex', flexDirection: 'column',
       alignItems: 'center', gap: '8px',
     }}>
@@ -295,14 +298,19 @@ function MapZoomPanel({ onClose }) {
           {tooltip('Return to Homepage')}
           <img src={leftIcon} alt="Back" style={{ width: '22px', height: '22px', objectFit: 'contain', filter: 'invert(1) brightness(2)' }} />
         </button>
-        <button style={BTN}
-          onMouseEnter={() => setHovered('Navigate Campus')} onMouseLeave={() => setHovered(null)}
+        <button style={BTN} onClick={() => {
+  onClose();
+  setTimeout(() => {
+    window.dispatchEvent(new Event('openQuickNav'));
+  }, 300);
+}}
+          onMouseEnter={() => setHovered('Quick Navigation')} onMouseLeave={() => setHovered(null)}
           onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'} onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
         >
-          {tooltip('Navigate Campus')}
+          {tooltip('Quick Navigation')}
           <img src={gpsNavIcon} alt="Navigate" style={{ width: '22px', height: '22px', objectFit: 'contain', filter: 'invert(1) brightness(2)' }} />
         </button>
-        <button style={BTN}
+        <button style={BTN} onClick={onOpenSidebar}
           onMouseEnter={() => setHovered('View All Locations')} onMouseLeave={() => setHovered(null)}
           onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'} onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
         >
@@ -337,10 +345,16 @@ function MapZoomPanel({ onClose }) {
   );
 }
 
-function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef, buildingMarker, setBuildingMarker, openBuilding }) {
+function MapInner({
+  markerRefs,
+  glowId,
+  openDetail,
+  buildingMarker,
+  setBuildingMarker,
+  openBuilding,
+}) {
   const map = useMap();
   const buildingMarkerRef = useRef(null);
-
   // Enforce bounds
   useEffect(() => {
     map.setMaxBounds(CAMPUS_BOUNDS);
@@ -385,7 +399,6 @@ function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef, buildingMarke
 
   // Zoom handled by fixed right-side panel — no portal needed
   function ZoomButtons() { return null; }
-
   function collegePopup(item) {
     return (
       <div style={{ fontFamily: "'Aventa', sans-serif", minWidth: '200px', margin: 0 }}>
@@ -589,12 +602,28 @@ function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef, buildingMarke
           </Popup>
         </Marker>
       )}
+<Marker
+  position={[6.069115927450321, 125.12674627794516]}
+  icon={collegeIcon}
+>
+  <Popup>
+    <div style={{
+      fontFamily: "'Aventa', sans-serif",
+      fontSize: '13px',
+      fontWeight: 700,
+      padding: '2px 4px',
+      color: COLLEGE_COLOR,
+    }}>
+      YOU ARE HERE
+    </div>
+  </Popup>
+</Marker>
     </>
   );
 }
 
 // ── Main export ──────────────────────────────────────────────────────────────
-export default function MapView({ onClose, targetId = null }) {
+export default function MapView({ onClose, targetId, onOpenQuickNav }) {
   const zoomPortalRef = useRef(null);
   const markerRefs = useRef({});
 
@@ -603,13 +632,14 @@ export default function MapView({ onClose, targetId = null }) {
   const [searchQuery, setSearchQuery]           = useState('');
   const [searchResults, setSearchResults]       = useState([]);
   const [glowId, setGlowId]                     = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedBuilding, setSelectedBuilding] = useState(null);
   const [buildingVisible, setBuildingVisible]   = useState(false);
   const [buildingTab, setBuildingTab]           = useState('plan'); // 'image' | 'plan'
   const [hoveredRoom, setHoveredRoom]           = useState(null);
   const [selectedFloor, setSelectedFloor]       = useState('floor1'); // 'floor1' | 'floor2'
   const [buildingMarker, setBuildingMarker]     = useState(null); // { building, coords }
-
+  const userPosition = [6.0672, 125.1270];
   const openBuilding = (building) => {
     setBuildingTab('plan');
     setSelectedFloor('floor1');
@@ -722,40 +752,53 @@ export default function MapView({ onClose, targetId = null }) {
             className="w-full py-4 pl-14 pr-6 bg-white text-purple-950 font-light placeholder-purple-900/50 rounded-full text-base focus:outline-none shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)]"
           />
 
-          {/* Dropdown results */}
-          {searchResults.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl overflow-hidden z-[600] border border-gray-100" style={{ maxHeight: '340px', overflowY: 'auto' }}>
-              {searchResults.map(item => {
-                const isFacilityType = ['Facility', 'Dormitory', 'Building', 'Field', 'Entrance'].includes(item.type);
-                const dotColor = isFacilityType ? FACILITY_COLOR : COLLEGE_COLOR;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={e => { e.stopPropagation(); handleResultClick(item); }}
-                    className="w-full px-5 py-3.5 text-left hover:bg-purple-50 active:bg-purple-100 transition-colors duration-150 border-b border-gray-100 last:border-b-0 focus:outline-none flex items-center gap-3"
-                  >
-                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: dotColor }} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 leading-tight">{item.name}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{item.type}</p>
-                    </div>
-                    {item.code && (
-                      <span style={{
-                        fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em',
-                        color: COLLEGE_COLOR, background: `${COLLEGE_COLOR}12`,
-                        border: `1px solid ${COLLEGE_COLOR}28`,
-                        borderRadius: '5px', padding: '2px 7px', flexShrink: 0,
-                        fontFamily: "'Aventa', sans-serif",
-                      }}>{item.code}</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
 
-      </div>{/* end floating header */}
+{/* Dropdown results */}
+{searchResults.length > 0 && (
+  <div
+    className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl overflow-hidden z-[600] border border-gray-100"
+    style={{ maxHeight: '340px', overflowY: 'auto' }}
+  >
+    {searchResults.map(item => {
+      const isFacilityType =
+        ['Facility', 'Dormitory', 'Building', 'Field', 'Entrance'].includes(item.type);
+
+      const dotColor = isFacilityType
+        ? FACILITY_COLOR
+        : COLLEGE_COLOR;
+
+      return (
+        <button
+          key={item.id}
+          onClick={e => {
+            e.stopPropagation();
+            handleResultClick(item);
+          }}
+          className="w-full px-5 py-3.5 text-left hover:bg-purple-50 flex items-center gap-3"
+        >
+          <span
+            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+            style={{ backgroundColor: dotColor }}
+          />
+
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-900 leading-tight">
+              {item.name}
+            </p>
+
+            <p className="text-xs text-gray-400 mt-0.5">
+              {item.type}
+            </p>
+          </div>
+        </button>
+      );
+    })}
+  </div>
+)}
+      </div> {/* end search bar */}
+    </div> {/* end floating header */}
+
+</div> {/* end blur wrapper content */}
 
       {/* ── Legend ── */}
       <div className="absolute bottom-6 left-6 z-[500] bg-white border border-gray-200 rounded-xl p-4 shadow-xl text-sm space-y-2">
@@ -783,31 +826,34 @@ export default function MapView({ onClose, targetId = null }) {
       </div>
 
       {/* ── Map — fills the entire screen, everything floats on top ── */}
-      <div style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
-        <MapContainer
-          center={[6.0672, 125.1270]}
-          zoom={16}
-          minZoom={16}
-          maxZoom={18}
-          maxBounds={CAMPUS_BOUNDS}
-          maxBoundsViscosity={1.0}
-          style={{ width: '100%', height: '100%' }}
-          zoomControl={false}
-        >
-          <MapInner
-            markerRefs={markerRefs}
-            glowId={glowId}
-            openDetail={openDetail}
-            zoomPortalRef={zoomPortalRef}
-            buildingMarker={buildingMarker}
-            setBuildingMarker={setBuildingMarker}
-            openBuilding={openBuilding}
-          />
-          <MapZoomPanel onClose={onClose} />
-        </MapContainer>
-      </div>
+<div style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
+  <MapContainer
+    center={[6.0672, 125.1270]}
+    zoom={16}
+    minZoom={16}
+    maxZoom={18}
+    maxBounds={CAMPUS_BOUNDS}
+    maxBoundsViscosity={1.0}
+    style={{ width: '100%', height: '100%' }}
+    zoomControl={false}
+  >
+    <MapInner
+      markerRefs={markerRefs}
+      glowId={glowId}
+      openDetail={openDetail}
+      zoomPortalRef={zoomPortalRef}
+      buildingMarker={buildingMarker}
+      setBuildingMarker={setBuildingMarker}
+      openBuilding={openBuilding}
+    />
 
-      </div> {/* end blur wrapper */}
+    <MapZoomPanel
+      onClose={onClose}
+      onOpenSidebar={() => setSidebarOpen(true)}
+      sidebarOpen={sidebarOpen}
+    />
+  </MapContainer>
+</div>
 
       {/* ── Popup CSS ── */}
       <style>{`
@@ -1367,7 +1413,58 @@ export default function MapView({ onClose, targetId = null }) {
         </div>
         );
       })()}
-
+  {sidebarOpen && (
+    <div onClick={() => setSidebarOpen(false)} style={{
+      position: 'absolute', inset: 0, zIndex: 499, background: 'transparent',
+    }} />
+  )}
+  {/* ── All Locations Sidebar ── */}
+      <div style={{
+        position: 'absolute', top: 0, right: 0, bottom: 0, width: '320px',
+        zIndex: 500,
+        transform: sidebarOpen ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform 0.4s cubic-bezier(0.34,1.2,0.64,1)',
+        background: COLLEGE_COLOR,
+        boxShadow: '8px 0 40px rgba(0,0,0,0.4)',
+        display: 'flex', flexDirection: 'column',
+        fontFamily: "'Aventa', sans-serif",
+      }}>
+        <div style={{ padding: '28px 20px 16px', borderBottom: '1px solid rgba(255,255,255,0.15)', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.14em', textTransform: 'uppercase' }}>Campus Directory</p>
+            <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', fontSize: '22px', lineHeight: 1, padding: '0 2px' }}>×</button>
+          </div>
+          <h2 style={{ margin: '4px 0 0', fontSize: '22px', fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>All Locations</h2>
+        </div>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 0' }}>
+          {[
+            { label: 'Colleges & Departments', items: COLLEGES },
+            { label: 'Offices & Facilities', items: FACILITIES },
+            { label: 'Buildings & Institutes', items: EXTRA_COLLEGES },
+            { label: 'Other Facilities', items: EXTRA_FACILITIES },
+            { label: 'Entrances & Exits', items: GATES },
+          ].map(({ label, items }) => (
+            <div key={label}>
+              <p style={{ margin: '12px 20px 4px', fontSize: '10px', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600 }}>{label}</p>
+              {items.map(item => (
+                <button key={item.id}
+                  onClick={() => { setSidebarOpen(false); setGlowId(null); setTimeout(() => setGlowId(item.id), 20); }}
+                  style={{ width: '100%', padding: '10px 20px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', textAlign: 'left' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                >
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0, background: item.type === 'Entrance/Exit' ? '#e03030' : ['Facility','Dormitory','Field'].includes(item.type) ? FACILITY_COLOR : 'rgba(255,255,255,0.7)' }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#fff', lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</p>
+                    <p style={{ margin: '1px 0 0', fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>{item.type}</p>
+                  </div>
+                  {item.code && <span style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.08em', flexShrink: 0 }}>{item.code}</span>}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -1630,5 +1727,6 @@ function YBuildingFloorPlan({ floor, hoveredRoom, onRoomClick, accentColor }) {
       <Room id="y-quamso"  x={QU_X} y={QU_Y} w={QU_W} h={QU_H} labelLines={['Quality Assurance', 'Management', 'Services Office']} />
       <Room id="y-vcpd"    x={VP_X} y={VP_Y} w={VP_W} h={VP_H} labelLines={['Office of the VC', 'for Planning &', 'Development']} />
     </svg>
+
   );
 }

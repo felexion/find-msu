@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShaderGradientCanvas, ShaderGradient } from '@shadergradient/react';
 import MapView from './MapView';
+import QRCode from 'react-qr-code';
 
 // Suppress THREE.Clock deprecation warning from @shadergradient internals
 const _origWarn = console.warn.bind(console);
@@ -26,6 +27,9 @@ export default function App() {
   const [homeSearch, setHomeSearch] = useState('');
   const [homeResults, setHomeResults] = useState([]);
   const [mapTargetId, setMapTargetId] = useState(null);
+  const [showQuickNav, setShowQuickNav] = useState(false);
+  const [selectedQuickNav, setSelectedQuickNav] = useState(null);
+  const [directions, setDirections] = useState([]);
 
   // All searchable items — kept in sync with MapView data
   const ALL_ITEMS = [
@@ -99,6 +103,17 @@ export default function App() {
     }
   }, [showMap]);
 
+  useEffect(() => {
+    const handleQuickNavOpen = () => {
+      setShowQuickNav(true);
+    };
+
+    window.addEventListener('openQuickNav', handleQuickNavOpen);
+
+    return () => {
+      window.removeEventListener('openQuickNav', handleQuickNavOpen);
+    };
+  }, []);
   // Triggered when user clicks anywhere after loading completes
   const handleScreenClick = () => {
     if (isLoaded && !showDashboard) {
@@ -112,6 +127,61 @@ export default function App() {
     setIsBlurringOut(true);
     setTimeout(() => setShowMap(true), 500);
   };
+
+  const getGoogleMapsLink = (item) => {
+    const query = encodeURIComponent(`${item.name} MSU General Santos`);
+    return `https://www.google.com/maps/search/?api=1&query=${query}`;
+  };
+  const ORIGIN = {
+    name: 'ICT Complex',
+    coords: [6.069115927450321, 125.12674627794516],
+  };
+const DESTINATION_COORDS = {
+  1: [6.070480988321281, 125.12579094360856],
+  2: [6.064088002693254, 125.12683859876006],
+  3: [6.067896313435069, 125.12825013296172],
+  4: [6.0644563163346765, 125.13004240242738],
+  5: [6.06423760601592, 125.12834992857071],
+  6: [6.06774358929378, 125.12610972165167],
+  7: [6.069067815786466, 125.12589392474057],
+  8: [6.068557633415351, 125.12830040933797],
+  101: [6.06702148462265, 125.12394614511116],
+  102: [6.065520188853716, 125.12838202769997],
+  103: [6.066725955964607, 125.12799695772719],
+  104: [6.069841842030108, 125.12412084582711],
+  105: [6.066323469760834, 125.12839000321954],
+  106: [6.067222222222222, 125.12763888888888],
+};
+
+const generateDirections = (place) => {
+  const destination = DESTINATION_COORDS[place.id];
+
+  if (!destination) {
+    return ['Destination coordinates unavailable.'];
+  }
+
+  const [startLat, startLng] = ORIGIN.coords;
+  const [endLat, endLng] = destination;
+
+  const latDiff = endLat - startLat;
+  const lngDiff = endLng - startLng;
+
+  const northSouth =
+    latDiff > 0 ? 'north' : 'south';
+
+  const eastWest =
+    lngDiff > 0 ? 'east' : 'west';
+
+  const verticalDistance = Math.abs(latDiff * 111000);
+  const horizontalDistance = Math.abs(lngDiff * 111000);
+
+  return [
+    `Start at ${ORIGIN.name}.`,
+    `Proceed ${northSouth} for approximately ${Math.round(verticalDistance)} meters.`,
+    `Then continue ${eastWest} for approximately ${Math.round(horizontalDistance)} meters.`,
+    `You will arrive at ${place.name}.`,
+  ];
+};
 
   // Handle closing map
   const closeMap = () => {
@@ -328,7 +398,7 @@ export default function App() {
               {/* QUICK NAVIGATION BUTTON */}
               <button
                 className="group flex flex-col items-center space-y-2.5 focus:outline-none"
-                onClick={(e) => { e.stopPropagation(); }}
+                onClick={(e) => { e.stopPropagation(); setShowQuickNav(true); }}
               >
                 <div className="w-40 aspect-square flex items-center justify-center bg-white/15 border border-white/10 hover:bg-white/20 active:scale-95 rounded-2xl transition duration-200 backdrop-blur-md shadow-lg p-8">
                   <img
@@ -343,8 +413,124 @@ export default function App() {
 
           </div>
         </div>
-
       </div>
+
+      {/* QUICK NAVIGATION MODAL */}
+      {showQuickNav && (
+        <div className="fixed inset-0 z-[99999] bg-black/90 backdrop-blur-md flex">
+
+          {/* LEFT SIDE */}
+          <div className="w-[40%] bg-[#121212] border-r border-white/10 overflow-y-auto p-6">
+
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-3xl font-semibold text-white">
+                Quick Navigation
+              </h1>
+
+              <button
+                onClick={() => setShowQuickNav(false)}
+                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl transition"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              {ALL_ITEMS.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setSelectedQuickNav(item);
+                    setDirections(generateDirections(item));
+                  }}
+                  className={`w-full text-left p-4 rounded-2xl border transition ${
+                    selectedQuickNav?.id === item.id
+                      ? 'bg-[#79095b] border-[#79095b]'
+                      : 'bg-white/5 border-white/10 hover:bg-white/10'
+                  }`}
+                >
+                  <p className="text-white font-medium">
+                    {item.name}
+                  </p>
+
+                  <p className="text-white/60 text-sm mt-1">
+                    {item.type}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* RIGHT SIDE */}
+          <div className="flex-1 flex overflow-hidden">
+
+            {/* DIRECTIONS PANEL */}
+            <div className="flex-1 bg-[#181818] p-8 overflow-y-auto border-r border-white/10">
+
+              {!selectedQuickNav ? (
+                <div className="text-white/50 text-2xl h-full flex items-center justify-center">
+                  Select a destination to begin navigation.
+                </div>
+              ) : (
+                <>
+                  <h1 className="text-4xl font-semibold text-white mb-2">
+                    {selectedQuickNav.name}
+                  </h1>
+
+                  <p className="text-white/50 mb-10">
+                    Navigation Instructions
+                  </p>
+
+                  <div className="flex flex-col gap-4">
+                    {directions.map((step, index) => (
+                      <div
+                        key={index}
+                        className="bg-white/5 border border-white/10 rounded-2xl p-5"
+                      >
+                        <p className="text-sm text-white/40 mb-1">
+                          STEP {index + 1}
+                        </p>
+
+                        <p className="text-white text-lg">
+                          {step}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* QR PANEL */}
+            <div className="w-[350px] flex flex-col items-center justify-center p-8 text-center bg-[#101010]">
+
+              {selectedQuickNav && (
+                <>
+                  <div className="bg-white p-5 rounded-3xl mb-6">
+                    <QRCode
+                      value={getGoogleMapsLink(selectedQuickNav)}
+                      size={220}
+                    />
+                  </div>
+
+                  <a
+                    href={getGoogleMapsLink(selectedQuickNav)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bg-[#79095b] hover:opacity-90 transition text-white px-6 py-4 rounded-2xl text-lg font-medium"
+                  >
+                    Open in Google Maps
+                  </a>
+
+                  <p className="text-white/50 mt-6 text-sm leading-relaxed">
+                    Scan using your mobile phone to continue navigation in Google Maps.
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
