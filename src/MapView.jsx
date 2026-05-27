@@ -260,7 +260,7 @@ const COLLEGES = [
 
 const FACILITIES = [
   { id: 101, name: 'Gymnasium',                      coords: [6.06702148462265,  125.12394614511116], status: 'Open', type: 'Facility' },
-  { id: 102, name: "Registrar's Office (Y Building)", coords: [6.065520188853716, 125.12838202769997], status: 'Open', type: 'Facility' },
+  { id: 102, name: "Administration Building (Y Building)", coords: [6.065520188853716, 125.12838202769997], status: 'Open', type: 'Facility' },
   { id: 103, name: 'Library',                         coords: [6.066725955964607, 125.12799695772719], status: 'Open', type: 'Facility' },
   { id: 104, name: 'Office of Student Affairs',       coords: [6.069841842030108, 125.12412084582711], status: 'Open', type: 'Facility' },
   { id: 105, name: 'Laktanan',                        coords: [6.066323469760834, 125.12839000321954], status: 'Open', type: 'Facility' },
@@ -274,9 +274,9 @@ const EXTRA_COLLEGES = [
   { id: 202, name: 'SSC Building',                                         coords: [6.068957784834432, 125.12482383583192], status: 'Open', type: 'Building'  },
   { id: 203, name: 'Regional Science Research Center',                     coords: [6.069800666160386, 125.125835670486],   status: 'Open', type: 'Building'  },
   { id: 204, name: 'ROTC Headquarters',                                    coords: [6.063157819644279, 125.12783270375334], status: 'Open', type: 'Building'  },
-  { id: 205, name: 'ICT Building',  coords: [6.065338721556866, 125.12767722597256], status: 'Open', type: 'Building', buildingId: 'cnsm-3' },
-  { id: 206, name: 'ICT Complex',   coords: [6.069115927450321, 125.12674627794516], status: 'Open', type: 'Building', buildingId: 'cnsm-3' },
-  { id: 207, name: 'IT/Physics Department',                                coords: [6.069610682801607, 125.1263247496069],  status: 'Open', type: 'Building'  },
+  { id: 205, name: 'ICT Building',  coords: [6.065338721556866, 125.12767722597256], status: 'Open', type: 'Building', buildingId: 'cnsm-3', code: 'ICT' },
+  { id: 206, name: 'ICT Complex',   coords: [6.069115927450321, 125.12674627794516], status: 'Open', type: 'Building', buildingId: 'cnsm-3', code: 'ICT' },
+  { id: 207, name: 'Physics Building',                                coords: [6.069610682801607, 125.1263247496069],  status: 'Open', type: 'Building'  },
 ];
 
 const EXTRA_FACILITIES = [
@@ -289,6 +289,8 @@ const EXTRA_FACILITIES = [
   { id: 308, name: 'Mosque',                coords: [6.06668695352738,   125.1226887754368],  status: 'Open', type: 'Building'   },
   { id: 309, name: 'Open Court',            coords: [6.066232412609107,  125.12380032630378], status: 'Open', type: 'Building'   },
   { id: 310, name: 'Quadrangle',            coords: [6.0658170898974895, 125.12626962490214], status: 'Open', type: 'Field'      },
+  { id: 313, name: 'Gemma East',            coords: [6.06823519023971,   125.12762342917011], status: 'Open', type: 'Building'   },
+  { id: 314, name: 'Gemma West',            coords: [6.0681082831614415, 125.12700624812035], status: 'Open', type: 'Building'   },
 ];
 
 const GATES = [
@@ -471,12 +473,12 @@ function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef, buildingMarke
   function facilityPopup(item) {
     return (
       <div style={{ fontFamily: "'Aventa', sans-serif", minWidth: '200px', margin: 0 }}>
-        <div style={{ background: COLLEGE_COLOR, padding: '14px 36px 14px 14px', position: 'relative' }}>
+        <div style={{ background: '#f0ad3e', padding: '14px 36px 14px 14px', position: 'relative' }}>
           <div>
-            <p style={{ margin: '0 0 2px', fontSize: '11px', color: 'rgba(255,255,255,0.65)', letterSpacing: '0.08em' }}>
+            <p style={{ margin: '0 0 2px', fontSize: '11px', color: 'rgba(0,0,0,0.55)', letterSpacing: '0.08em' }}>
               {item.type.toUpperCase()}
             </p>
-            <strong style={{ color: '#fff', fontSize: '13px', lineHeight: 1.3, display: 'block' }}>
+            <strong style={{ color: '#000', fontSize: '13px', lineHeight: 1.3, display: 'block' }}>
               {item.name}
             </strong>
           </div>
@@ -485,7 +487,7 @@ function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef, buildingMarke
           <button
             onClick={() => openDetail(item)}
             style={{
-              background: COLLEGE_COLOR, color: '#fff', border: 'none', borderRadius: '6px',
+              background: '#f0ad3e', color: '#000', border: 'none', borderRadius: '6px',
               padding: '6px 18px', fontSize: '12px', fontFamily: "'Aventa', sans-serif",
               cursor: 'pointer', fontWeight: 600, letterSpacing: '0.04em',
             }}
@@ -497,7 +499,7 @@ function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef, buildingMarke
 
   const collegeIcon = L.divIcon({
     className: '',
-    html: `<img src="${findIcon}" style="width:40px;height:40px;filter:invert(11%) sepia(90%) saturate(3000%) hue-rotate(300deg) brightness(80%);" />`,
+    html: `<img src="${findIcon}" style="width:40px;height:40px;filter:invert(11%) sepia(90%) saturate(3200%) hue-rotate(310deg) brightness(70%);" />`,
     iconSize: [40, 40], iconAnchor: [20, 40], popupAnchor: [0, -40],
   });
 
@@ -553,7 +555,7 @@ function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef, buildingMarke
         >
           <Popup
             eventHandlers={{
-              add: (e) => { const btn = e.target._closeButton; if (btn) btn.classList.add('dark-close'); }
+              add: (e) => { const btn = e.target._closeButton; if (btn) btn.classList.add('facility-close'); }
             }}
           >{facilityPopup(item)}</Popup>
         </Marker>
@@ -595,23 +597,26 @@ function MapInner({ markerRefs, glowId, openDetail, zoomPortalRef, buildingMarke
         <Marker
           key={item.id}
           position={item.coords}
-          icon={dotAmber}
+          icon={item.id === 313 || item.id === 314 ? dotMagenta : dotAmber}
           ref={el => { if (el) markerRefs.current[item.id] = el; }}
         >
           <Popup
             eventHandlers={{
-              add: (e) => { const btn = e.target._closeButton; if (btn) btn.classList.add('dark-close'); }
+              add: (e) => { 
+                const btn = e.target._closeButton; 
+                if (btn) btn.classList.add(item.id === 313 || item.id === 314 ? 'dark-close' : 'facility-close');
+              }
             }}
           >
             <div style={{ fontFamily: "'Aventa', sans-serif", minWidth: '200px', margin: 0 }}>
-              <div style={{ background: FACILITY_COLOR, padding: '14px 14px 10px', position: 'relative' }}>
+              <div style={{ background: (item.id === 313 || item.id === 314) ? COLLEGE_COLOR : FACILITY_COLOR, padding: '14px 14px 10px', position: 'relative' }}>
                 <p style={{ margin: '0 0 2px', fontSize: '11px', color: 'rgba(255,255,255,0.65)', letterSpacing: '0.08em' }}>{item.type.toUpperCase()}</p>
                 <strong style={{ color: '#fff', fontSize: '13px', lineHeight: 1.3, display: 'block' }}>{item.name}</strong>
               </div>
               <div style={{ padding: '10px 14px', display: 'flex', justifyContent: 'flex-end' }}>
                 <button
                   onClick={() => openDetail(item)}
-                  style={{ background: FACILITY_COLOR, color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 18px', fontSize: '12px', fontFamily: "'Aventa', sans-serif", cursor: 'pointer', fontWeight: 600, letterSpacing: '0.04em' }}
+                  style={{ background: (item.id === 313 || item.id === 314) ? COLLEGE_COLOR : FACILITY_COLOR, color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 18px', fontSize: '12px', fontFamily: "'Aventa', sans-serif", cursor: 'pointer', fontWeight: 600, letterSpacing: '0.04em' }}
                 >View</button>
               </div>
             </div>
@@ -828,29 +833,42 @@ export default function MapView({ onClose, targetId = null }) {
           </div>
         </div>
 
-        <div className="absolute bottom-6 left-6 z-[500] bg-white border border-gray-200 rounded-xl p-4 shadow-xl text-sm space-y-2">
-          <h3 className="text-xs font-semibold tracking-wide text-gray-800 mb-2">MSU General Santos</h3>
-          <div className="flex items-center space-x-2.5">
-            <img src={findIcon} style={{ width: '14px', height: '14px', filter: 'invert(11%) sepia(90%) saturate(3000%) hue-rotate(300deg) brightness(80%)' }} alt="" />
-            <span className="text-xs text-gray-700">Colleges &amp; Departments</span>
-          </div>
-          <div className="flex items-center space-x-2.5">
-            <img src={findIcon} style={{ width: '14px', height: '14px', filter: 'invert(75%) sepia(80%) saturate(600%) hue-rotate(5deg) brightness(105%)' }} alt="" />
-            <span className="text-xs text-gray-700">Offices &amp; Facilities</span>
-          </div>
-          <div className="flex items-center space-x-2.5">
-            <span className="w-3 h-3 rounded-full flex-shrink-0 border-2 border-white shadow-sm" style={{ backgroundColor: COLLEGE_COLOR }} />
-            <span className="text-xs text-gray-700">Buildings &amp; Institutes</span>
-          </div>
-          <div className="flex items-center space-x-2.5">
-            <span className="w-3 h-3 rounded-full flex-shrink-0 border-2 border-white shadow-sm" style={{ backgroundColor: FACILITY_COLOR }} />
-            <span className="text-xs text-gray-700">Other Facilities</span>
-          </div>
-          <div className="flex items-center space-x-2.5">
-            <span className="w-3 h-3 rounded-full flex-shrink-0 border-2 border-white shadow-sm" style={{ backgroundColor: '#e03030' }} />
-            <span className="text-xs text-gray-700">Entrances &amp; Exits</span>
-          </div>
+        <div className="absolute bottom-6 left-6 z-[500] bg-white border border-gray-200 rounded-2xl p-5.5 shadow-2xl space-y-3.5 min-w-[220px]">
+        <h3 className="text-sm font-bold tracking-wide text-gray-800 mb-1">MSU General Santos</h3>
+        
+        <div className="flex items-center space-x-3">
+          <img 
+            src={findIcon} 
+            style={{ width: '18px', height: '18px', filter: 'invert(11%) sepia(90%) saturate(3000%) hue-rotate(300deg) brightness(80%)' }} 
+            alt="" 
+          />
+          <span className="text-sm font-medium text-gray-700">Colleges &amp; Departments</span>
         </div>
+
+        <div className="flex items-center space-x-3">
+          <img 
+            src={findIcon} 
+            style={{ width: '18px', height: '18px', filter: 'invert(75%) sepia(80%) saturate(600%) hue-rotate(5deg) brightness(105%)' }} 
+            alt="" 
+          />
+          <span className="text-sm font-medium text-gray-700">Offices &amp; Facilities</span>
+        </div>
+
+        <div className="flex items-center space-x-3">
+          <span className="w-4 h-4 rounded-full flex-shrink-0 border-2 border-white shadow-md" style={{ backgroundColor: COLLEGE_COLOR }} />
+          <span className="text-sm font-medium text-gray-700">Buildings &amp; Institutes</span>
+        </div>
+
+        <div className="flex items-center space-x-3">
+          <span className="w-4 h-4 rounded-full flex-shrink-0 border-2 border-white shadow-md" style={{ backgroundColor: FACILITY_COLOR }} />
+          <span className="text-sm font-medium text-gray-700">Other Facilities</span>
+        </div>
+
+        <div className="flex items-center space-x-3">
+          <span className="w-4 h-4 rounded-full flex-shrink-0 border-2 border-white shadow-md" style={{ backgroundColor: '#e03030' }} />
+          <span className="text-sm font-medium text-gray-700">Entrances &amp; Exits</span>
+        </div>
+      </div>
 
         <div style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
           <MapContainer
@@ -887,14 +905,16 @@ export default function MapView({ onClose, targetId = null }) {
         .leaflet-popup-tip { background: #fff !important; }
         .leaflet-popup-content { margin: 0 !important; font-family: 'Aventa', sans-serif; }
         .leaflet-popup-close-button {
-          color: rgba(255,255,255,0.8) !important; font-size: 18px !important;
+          color: #ffffff !important; font-size: 18px !important;
           top: 10px !important; right: 10px !important;
           width: 22px !important; height: 22px !important; line-height: 22px !important;
           text-align: center; font-weight: 400 !important;
         }
-        .leaflet-popup-close-button:hover { color: #fff !important; }
-        .leaflet-popup-close-button.dark-close { color: rgba(0,0,0,0.5) !important; }
-        .leaflet-popup-close-button.dark-close:hover { color: #000 !important; }
+        .leaflet-popup-close-button:hover { color: #ffffff !important; }
+        .leaflet-popup-close-button.dark-close { color: #ffffff !important; }
+        .leaflet-popup-close-button.dark-close:hover { color: #ffffff !important; }
+        .leaflet-popup-close-button.facility-close { color: #000000 !important; }
+        .leaflet-popup-close-button.facility-close:hover { color: #000000 !important; }
         .leaflet-container { font-family: 'Aventa', sans-serif; background: #0a0a0a; }
         .leaflet-control-attribution {
           background: rgba(255,255,255,0.1) !important; color: white !important; font-size: 10px;
@@ -1804,7 +1824,7 @@ function OSAFloorPlan({ floor, hoveredRoom, onRoomClick, accentColor }) {
   );
 }
 
-// ── IT/Physics Department Floor Plan ─────────────────────────────────────────
+// ── Physics Building Floor Plan ─────────────────────────────────────────
 function ITPFloorPlan({ floor, hoveredRoom, onRoomClick, accentColor }) {
   if (!floor) return null;
   const ACCENT = accentColor || COLLEGE_COLOR;
